@@ -1,4 +1,4 @@
-package template.theme
+package uvis.irin.grape.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle

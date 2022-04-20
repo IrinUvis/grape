@@ -1,4 +1,4 @@
-package template.theme
+package uvis.irin.grape.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
