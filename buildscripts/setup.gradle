@@ -1,8 +1,8 @@
 def renameConfig = [
         templateName  : "template",
         templateAppId : "template.app.id",
-        newPackage    : "domain.yourname.app",
-        newProjectName: "Your Project",
+        newPackage    : "uvis.irin.grape",
+        newProjectName: "Grape",
 ]
 
 task renameAppPackage(type: Copy) {
