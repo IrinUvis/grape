@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package uvis.irin.grape.theme
 
 import androidx.compose.material3.Typography
