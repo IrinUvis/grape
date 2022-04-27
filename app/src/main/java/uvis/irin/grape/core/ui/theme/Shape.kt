@@ -1,4 +1,4 @@
-package uvis.irin.grape.theme
+package uvis.irin.grape.core.ui.theme
 
 // import androidx.compose.foundation.shape.RoundedCornerShape
 // import androidx.compose.material.Shapes

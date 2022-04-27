@@ -1,6 +1,6 @@
 @file:Suppress("MagicNumber")
 
-package uvis.irin.grape.theme
+package uvis.irin.grape.core.ui.theme
 
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors

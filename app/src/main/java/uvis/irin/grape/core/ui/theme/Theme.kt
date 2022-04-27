@@ -1,4 +1,4 @@
-package uvis.irin.grape.theme
+package uvis.irin.grape.core.ui.theme
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme

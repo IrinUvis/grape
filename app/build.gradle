@@ -50,7 +50,7 @@ android {
             kover {
                 enabled = true
                 excludes = [
-                        "uvis.irin.grape.theme.*",
+                        "uvis.irin.grape.core.ui.theme.*",
                         ".*ComposableSingletons.*",
                         ".*Hilt.*",
                         ".*BuildConfig.*",
