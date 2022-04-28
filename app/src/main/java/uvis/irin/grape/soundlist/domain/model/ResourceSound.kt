@@ -6,4 +6,4 @@ data class ResourceSound(
     override val id: UUID,
     override val name: String,
     val resId: Int,
-) : Sound()
+) : Sound
