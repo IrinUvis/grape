@@ -72,6 +72,8 @@ dependencies {
     implementation "androidx.compose.material3:material3:$rootProject.ext.versions.md3"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$rootProject.ext.versions.lifecycle"
     implementation "androidx.activity:activity-compose:$rootProject.ext.versions.activityCompose"
+    implementation "com.google.accompanist:accompanist-insets-ui:$rootProject.ext.versions.accompanist"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$rootProject.ext.versions.accompanist"
     testImplementation "junit:junit:$rootProject.ext.versions.junit"
     androidTestImplementation "androidx.test.ext:junit:$rootProject.ext.versions.androidxTest"
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.ext.versions.espresso"

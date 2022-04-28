@@ -9,20 +9,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.Scaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.rememberInsetsPaddingValues
+import uvis.irin.grape.core.ui.components.TopAppBar
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SoundListContent() {
     Scaffold(
@@ -33,7 +34,6 @@ fun SoundListContent() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-
             Card {
                 Text(text = "Hello Grape!")
             }
@@ -43,9 +43,16 @@ fun SoundListContent() {
 
 @Composable
 fun SoundSectionTabBar() {
-    TopAppBar {
+    TopAppBar(
+        contentPadding = rememberInsetsPaddingValues(
+            LocalWindowInsets.current.statusBars,
+            applyBottom = false,
+        ),
+    ) {
         Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState())
+            modifier = Modifier
+                .padding(4.dp)
+                .horizontalScroll(rememberScrollState())
         ) {
             SoundSectionTab(name = "Stonoga", false)
             SoundSectionTab(name = "Jagoda", false)
