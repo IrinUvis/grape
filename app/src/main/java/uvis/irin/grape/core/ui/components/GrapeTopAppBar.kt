@@ -35,14 +35,5 @@ fun TopAppBar(
             modifier = Modifier.padding(contentPadding),
             content = content
         )
-//        androidx.compose.material.TopAppBar(
-//            title = title,
-//            navigationIcon = navigationIcon,
-//            actions = actions,
-//            backgroundColor = Color.Transparent,
-//            contentColor = contentColor,
-//            elevation = 0.dp,
-//            modifier = Modifier.padding(contentPadding)
-//        )
     }
 }
