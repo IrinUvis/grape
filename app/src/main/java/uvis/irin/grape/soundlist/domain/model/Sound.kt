@@ -5,4 +5,5 @@ import java.util.UUID
 interface Sound {
     val id: UUID
     val name: String
+    val category: SoundCategory
 }

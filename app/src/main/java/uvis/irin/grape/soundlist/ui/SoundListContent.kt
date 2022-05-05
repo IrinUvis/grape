@@ -29,35 +29,26 @@ import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.Sound
+import uvis.irin.grape.soundlist.domain.model.SoundCategory
 import java.util.*
 
 @Composable
-fun SoundListContent() {
+fun SoundListContent(viewState: SoundListViewState) {
     val pagerState = rememberPagerState()
-
-    val sounds = listOf(
-        ResourceSound(id = UUID.randomUUID(), name = "Stonoga", resId = 1),
-        ResourceSound(id = UUID.randomUUID(), name = "Jagoda", resId = 2),
-        ResourceSound(id = UUID.randomUUID(), name = "Brozi", resId = 3),
-        ResourceSound(id = UUID.randomUUID(), name = "Polska", resId = 4),
-        ResourceSound(id = UUID.randomUUID(), name = "Jail", resId = 5),
-        ResourceSound(id = UUID.randomUUID(), name = "Ochelska", resId = 6),
-        ResourceSound(id = UUID.randomUUID(), name = "CKaE", resId = 7),
-    )
 
     Scaffold(topBar = {
         SoundSectionTabBar(
-            sounds = sounds,
+            categories = viewState.categories,
             pagerState = pagerState,
         )
     }) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             HorizontalPager(
                 state = pagerState,
-                count = sounds.size,
+                count = viewState.categories.size,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                Text(text = sounds[page].name)
+                Text(text = viewState.categories[page].name)
             }
         }
 
@@ -65,7 +56,7 @@ fun SoundListContent() {
 }
 
 @Composable
-fun SoundSectionTabBar(sounds: List<Sound>, pagerState: PagerState) {
+fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: PagerState) {
     val scope = rememberCoroutineScope()
 
     ScrollableTabRow(
@@ -79,9 +70,9 @@ fun SoundSectionTabBar(sounds: List<Sound>, pagerState: PagerState) {
             ),
         ),
     ) {
-        sounds.forEachIndexed { index, sound ->
+        categories.forEachIndexed { index, category ->
             SoundSectionTab(
-                text = sound.name,
+                text = category.name,
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
@@ -129,6 +120,6 @@ fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun SoundListContentPreview() {
     GrapeTheme {
-        SoundListContent()
+        SoundListContent(SoundListViewState())
     }
 }
