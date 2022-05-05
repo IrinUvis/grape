@@ -4,18 +4,20 @@ package uvis.irin.grape.soundlist.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,13 +29,33 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.theme.GrapeTheme
-import uvis.irin.grape.soundlist.domain.model.ResourceSound
-import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
-import java.util.*
 
 @Composable
 fun SoundListContent(viewState: SoundListViewState) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+    ) {
+        when (viewState.showLoading) {
+            true -> {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .align(Alignment.Center),
+                )
+            }
+            false -> {
+                LoadedSoundListContent(
+                    viewState,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadedSoundListContent(viewState: SoundListViewState) {
     val pagerState = rememberPagerState()
 
     Scaffold(topBar = {
@@ -51,7 +73,6 @@ fun SoundListContent(viewState: SoundListViewState) {
                 Text(text = viewState.categories[page].name)
             }
         }
-
     }
 }
 
@@ -120,6 +141,6 @@ fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun SoundListContentPreview() {
     GrapeTheme {
-        SoundListContent(SoundListViewState())
+        LoadedSoundListContent(SoundListViewState())
     }
 }

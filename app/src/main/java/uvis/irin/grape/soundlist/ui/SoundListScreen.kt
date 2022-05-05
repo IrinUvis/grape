@@ -7,8 +7,11 @@ import uvis.irin.grape.soundlist.domain.usecase.ProdGetSoundCategoriesUseCase
 
 @Composable
 fun SoundListScreen(
-    viewModel: SoundListViewModel = SoundListViewModel(ProdGetSoundCategoriesUseCase(
-        ProdSoundListRepository())),
+    viewModel: SoundListViewModel = SoundListViewModel(
+        ProdGetSoundCategoriesUseCase(
+            ProdSoundListRepository()
+        )
+    ),
 ) {
     val viewState = viewModel.viewState.collectAsState()
 
