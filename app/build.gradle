@@ -59,6 +59,7 @@ android {
             }
         }
     }
+    namespace 'uvis.irin.grape'
 }
 
 dependencies {
