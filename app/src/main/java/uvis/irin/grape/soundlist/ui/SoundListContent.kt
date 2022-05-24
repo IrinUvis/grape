@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Scaffold
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,12 +58,12 @@ fun SoundListContent(viewState: SoundListViewState) {
 fun LoadedSoundListContent(viewState: SoundListViewState) {
     val pagerState = rememberPagerState()
 
-    Scaffold(topBar = {
-        SoundSectionTabBar(
+    Scaffold(
+        topBar = { SoundSectionTabBar(
             categories = viewState.categories,
             pagerState = pagerState,
-        )
-    }) { paddingValues ->
+        )}
+    ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             HorizontalPager(
                 state = pagerState,
