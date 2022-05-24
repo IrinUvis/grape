@@ -22,6 +22,7 @@ fun SoundListScreen(
     val viewState = viewModel.viewState.collectAsState()
 
     SoundListContent(
-        viewState = viewState.value
+        viewState = viewState.value,
+        onSoundPressed = viewModel::onSoundPressed
     )
 }

@@ -2,23 +2,20 @@
 
 package uvis.irin.grape.soundlist.ui
 
+import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.LocalWindowInsets
@@ -29,10 +26,14 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.theme.GrapeTheme
+import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
 
 @Composable
-fun SoundListContent(viewState: SoundListViewState) {
+fun SoundListContent(
+    viewState: SoundListViewState,
+    onSoundPressed: (sound: Sound, context: Context) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -48,6 +49,7 @@ fun SoundListContent(viewState: SoundListViewState) {
             false -> {
                 LoadedSoundListContent(
                     viewState,
+                    onSoundPressed = onSoundPressed
                 )
             }
         }
@@ -55,24 +57,38 @@ fun SoundListContent(viewState: SoundListViewState) {
 }
 
 @Composable
-fun LoadedSoundListContent(viewState: SoundListViewState) {
+fun LoadedSoundListContent(
+    viewState: SoundListViewState,
+    onSoundPressed: (sound: Sound, context: Context) -> Unit
+) {
     val pagerState = rememberPagerState()
 
     Scaffold(
-        topBar = { SoundSectionTabBar(
-            categories = viewState.categories,
-            pagerState = pagerState,
-        )}
+        topBar = {
+            SoundSectionTabBar(
+                categories = viewState.categories,
+                pagerState = pagerState,
+            )
+        }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             HorizontalPager(
                 state = pagerState,
                 count = viewState.categories.size,
                 modifier = Modifier.fillMaxSize()
-            ) { page ->
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    viewState.sounds.map { 
-                        Text(text = it.name)
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(10.dp)
+                ) {
+                    items(viewState.sounds) { sound ->
+                        val context = LocalContext.current
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { onSoundPressed(sound, context) }
+                        ) {
+                            Text(text = sound.name)
+                        }
                     }
                 }
             }
@@ -145,6 +161,9 @@ fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun SoundListContentPreview() {
     GrapeTheme {
-        LoadedSoundListContent(SoundListViewState())
+        LoadedSoundListContent(
+            viewState = SoundListViewState(),
+            onSoundPressed = { _, _ -> }
+        )
     }
 }
