@@ -13,7 +13,6 @@ import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.usecase.GetAllSoundsByCategoryUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetSoundCategoriesUseCase
 
-
 class SoundListViewModel(
     private val getSoundCategoriesUseCase: GetSoundCategoriesUseCase,
     private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase

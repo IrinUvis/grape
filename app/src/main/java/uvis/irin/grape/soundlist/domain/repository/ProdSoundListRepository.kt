@@ -1,7 +1,6 @@
 package uvis.irin.grape.soundlist.domain.repository
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.delay
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
@@ -30,24 +29,16 @@ class ProdSoundListRepository : SoundListRepository {
     override fun fetchSoundsByCategory(category: SoundCategory, context: Context): Result<List<Sound>> {
         val am = context.assets
 
-        val kotlinResult = runCatching {
-            am.list(category.assetsPath)?.map { filename ->
-                ResourceSound(
-                    name = filename
-                        .replaceFirstChar { it.uppercase() }
-                        .dropLast(4),
-                    category = category,
-                    relativeAssetPath = filename
-                )
-            } ?: emptyList()
-        }.onSuccess { sounds ->
-            return Result.Success(sounds)
-        }.onFailure { throwable ->
-            return Result.Error(throwable)
-        }
+        val sounds = am.list(category.assetsPath)?.map { filename ->
+            ResourceSound(
+                name = filename
+                    .replaceFirstChar { it.uppercase() }
+                    .replace("\\.\\w+$".toRegex(), ""),
+                category = category,
+                relativeAssetPath = filename
+            )
+        } ?: emptyList()
 
-        Log.d("runCatching", kotlinResult.toString())
-
-        return Result.Success(emptyList())
+        return Result.Success(sounds)
     }
 }
