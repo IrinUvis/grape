@@ -1,6 +1,6 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalPagerApi::class
 )
 
 package uvis.irin.grape.soundlist.ui
@@ -8,7 +8,6 @@ package uvis.irin.grape.soundlist.ui
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -104,7 +102,8 @@ fun LoadedSoundListContent(
                         GrapeButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { onSoundPressed(sound, context) },
-                            onLongClick = { onSoundLongPressed(sound, context) }) {
+                            onLongClick = { onSoundLongPressed(sound, context) }
+                        ) {
                             Text(text = sound.name)
                         }
                     }

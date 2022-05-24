@@ -88,17 +88,18 @@ class SoundListViewModel(
 
     fun onSoundLongPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
+            @Suppress("SwallowedException")
             try {
-                val `in` = context.assets.open("${sound.category.assetsPath}/${sound.relativeAssetPath}")
+                val inStream = context.assets.open("${sound.category.assetsPath}/${sound.relativeAssetPath}")
                 val soundTempFile = File.createTempFile("sound", ".mp3")
-                copyFile(`in`, FileOutputStream(soundTempFile))
+                copyFile(inStream, FileOutputStream(soundTempFile))
 
                 val authority = BuildConfig.APPLICATION_ID + ".provider"
                 val uri = FileProvider.getUriForFile(context.applicationContext, authority, soundTempFile)
                 val shareIntent = Intent(Intent.ACTION_SEND)
                 shareIntent.type = "audio/mp3"
                 shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 context.startActivity(Intent.createChooser(shareIntent, "Share"))
             } catch (ex: IOException) {
                 Log.e("Sound sharing", "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared")
@@ -107,11 +108,11 @@ class SoundListViewModel(
     }
 
     @Throws(IOException::class)
-    private fun copyFile(`in`: InputStream, out: OutputStream) {
+    private fun copyFile(inStream: InputStream, outStream: OutputStream) {
         val buffer = ByteArray(1024)
         var read: Int
-        while (`in`.read(buffer).also { read = it } != -1) {
-            out.write(buffer, 0, read)
+        while (inStream.read(buffer).also { read = it } != -1) {
+            outStream.write(buffer, 0, read)
         }
     }
 }
