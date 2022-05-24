@@ -1,9 +1,14 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+@file:OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
+    ExperimentalFoundationApi::class
+)
 
 package uvis.irin.grape.soundlist.ui
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +39,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
@@ -41,7 +47,8 @@ import uvis.irin.grape.soundlist.domain.model.SoundCategory
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit
+    onSoundPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundLongPressed: (sound: Sound, context: Context) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -58,7 +65,8 @@ fun SoundListContent(
             false -> {
                 LoadedSoundListContent(
                     viewState,
-                    onSoundPressed = onSoundPressed
+                    onSoundPressed = onSoundPressed,
+                    onSoundLongPressed = onSoundLongPressed
                 )
             }
         }
@@ -68,7 +76,8 @@ fun SoundListContent(
 @Composable
 fun LoadedSoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit
+    onSoundPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
 ) {
     val pagerState = rememberPagerState()
 
@@ -92,10 +101,10 @@ fun LoadedSoundListContent(
                 ) {
                     items(viewState.sounds) { sound ->
                         val context = LocalContext.current
-                        Button(
+                        GrapeButton(
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { onSoundPressed(sound, context) }
-                        ) {
+                            onClick = { onSoundPressed(sound, context) },
+                            onLongClick = { onSoundLongPressed(sound, context) }) {
                             Text(text = sound.name)
                         }
                     }
@@ -172,7 +181,8 @@ private fun SoundListContentPreview() {
     GrapeTheme {
         LoadedSoundListContent(
             viewState = SoundListViewState(),
-            onSoundPressed = { _, _ -> }
+            onSoundPressed = { _, _ -> },
+            onSoundLongPressed = { _, _ -> }
         )
     }
 }

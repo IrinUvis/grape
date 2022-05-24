@@ -10,19 +10,20 @@ import uvis.irin.grape.soundlist.domain.usecase.ProdGetSoundCategoriesUseCase
 @Composable
 fun SoundListScreen(
     viewModel: SoundListViewModel = SoundListViewModel(
-        ProdGetSoundCategoriesUseCase(
+        getSoundCategoriesUseCase = ProdGetSoundCategoriesUseCase(
             ProdSoundListRepository()
         ),
-        ProdGetAllSoundsByCategoryUseCase(
+        getAllSoundsByCategoryUseCase = ProdGetAllSoundsByCategoryUseCase(
             ProdSoundListRepository(),
             LocalContext.current
-        )
+        ),
     ),
 ) {
     val viewState = viewModel.viewState.collectAsState()
 
     SoundListContent(
         viewState = viewState.value,
-        onSoundPressed = viewModel::onSoundPressed
+        onSoundPressed = viewModel::onSoundPressed,
+        onSoundLongPressed = viewModel::onSoundLongPressed
     )
 }
