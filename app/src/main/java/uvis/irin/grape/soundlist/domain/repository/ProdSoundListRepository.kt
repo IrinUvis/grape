@@ -1,13 +1,17 @@
 package uvis.irin.grape.soundlist.domain.repository
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
+import javax.inject.Inject
 
-class ProdSoundListRepository : SoundListRepository {
+class ProdSoundListRepository @Inject constructor(
+    @ApplicationContext private val context: Context
+) : SoundListRepository {
 
     override suspend fun fetchAllCategories(): Result<List<SoundCategory>> {
         @Suppress("MagicNumber")
@@ -26,7 +30,7 @@ class ProdSoundListRepository : SoundListRepository {
         )
     }
 
-    override fun fetchSoundsByCategory(category: SoundCategory, context: Context): Result<List<Sound>> {
+    override fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>> {
         val am = context.assets
 
         val sounds = am.list(category.assetsPath)?.map { filename ->

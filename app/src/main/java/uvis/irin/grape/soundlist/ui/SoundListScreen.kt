@@ -2,22 +2,11 @@ package uvis.irin.grape.soundlist.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
-import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
-import uvis.irin.grape.soundlist.domain.usecase.ProdGetAllSoundsByCategoryUseCase
-import uvis.irin.grape.soundlist.domain.usecase.ProdGetSoundCategoriesUseCase
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun SoundListScreen(
-    viewModel: SoundListViewModel = SoundListViewModel(
-        getSoundCategoriesUseCase = ProdGetSoundCategoriesUseCase(
-            ProdSoundListRepository()
-        ),
-        getAllSoundsByCategoryUseCase = ProdGetAllSoundsByCategoryUseCase(
-            ProdSoundListRepository()
-        ),
-        LocalContext.current
-    ),
+    viewModel: SoundListViewModel = hiltViewModel()
 ) {
     val viewState = viewModel.viewState.collectAsState()
 

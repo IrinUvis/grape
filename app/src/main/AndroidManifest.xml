@@ -7,6 +7,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/grape_launcher_round"
         android:supportsRtl="true"
+        android:name=".GrapeApp"
         android:theme="@style/Theme.AppTheme">
 
         <provider

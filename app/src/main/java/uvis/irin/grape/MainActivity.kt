@@ -12,9 +12,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import dagger.hilt.android.AndroidEntryPoint
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 import uvis.irin.grape.soundlist.ui.SoundListScreen
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,11 +46,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-// @Preview(showBackground = true)
-// @Composable
-// fun DefaultPreview() {
-//    GrapeTheme {
-//        Greeting("Android")
-//    }
-// }
