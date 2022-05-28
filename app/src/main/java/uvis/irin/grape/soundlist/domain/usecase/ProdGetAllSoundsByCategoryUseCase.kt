@@ -8,9 +8,9 @@ import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
 
 class ProdGetAllSoundsByCategoryUseCase(
     private val soundListRepository: ProdSoundListRepository,
-    private val context: Context
 ) : GetAllSoundsByCategoryUseCase {
-    override fun invoke(category: SoundCategory): Result<List<Sound>> {
+
+    override fun invoke(category: SoundCategory, context: Context): Result<List<Sound>> {
         return soundListRepository.fetchSoundsByCategory(category, context)
     }
 }

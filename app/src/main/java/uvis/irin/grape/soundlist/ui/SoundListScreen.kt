@@ -14,9 +14,9 @@ fun SoundListScreen(
             ProdSoundListRepository()
         ),
         getAllSoundsByCategoryUseCase = ProdGetAllSoundsByCategoryUseCase(
-            ProdSoundListRepository(),
-            LocalContext.current
+            ProdSoundListRepository()
         ),
+        LocalContext.current
     ),
 ) {
     val viewState = viewModel.viewState.collectAsState()

@@ -25,6 +25,7 @@ import java.io.OutputStream
 class SoundListViewModel(
     private val getSoundCategoriesUseCase: GetSoundCategoriesUseCase,
     private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase,
+    private val context: Context
 ) : ViewModel() {
     private val _viewState: MutableStateFlow<SoundListViewState> =
         MutableStateFlow(SoundListViewState())
@@ -50,7 +51,8 @@ class SoundListViewModel(
             }
 
             val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase.invoke(
-                _viewState.value.categories.first()
+                _viewState.value.categories.first(),
+                context
             )
 
             _viewState.value = when (getAllSoundsByCategoryResult) {
