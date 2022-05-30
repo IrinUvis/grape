@@ -129,7 +129,6 @@ fun LoadedSoundListContent(
                     }
                 }
             }
-
         }
     }
 }
@@ -169,8 +168,6 @@ private fun SoundSectionTabBar(
     selectedTabIndex: Int,
     onCategorySelected: (category: SoundCategory) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         indicator = { },

@@ -1,8 +1,6 @@
 package uvis.irin.grape.soundlist.domain.repository
 
 import android.content.Context
-import android.util.Log
-import androidx.compose.ui.text.capitalize
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -45,7 +43,7 @@ class ProdSoundListRepository @Inject constructor(
                                     Locale.ROOT
                                 ) else it.toString()
                             },
-                            assetsPath = "$ASSET_PATH/${it}"
+                            assetsPath = "$ASSET_PATH/$it"
                         )
                     },
                 )
