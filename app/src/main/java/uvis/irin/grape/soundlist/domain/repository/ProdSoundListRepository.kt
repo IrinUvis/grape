@@ -24,9 +24,6 @@ class ProdSoundListRepository @Inject constructor(
     }
 
     override suspend fun fetchAllCategories(): Result<List<SoundCategory>> {
-        @Suppress("MagicNumber")
-        delay(2_000)
-
         return withContext(coroutineDispatcher) {
             val am = context.assets
 

@@ -1,6 +1,7 @@
 package uvis.irin.grape.soundlist.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,10 +12,13 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
@@ -86,6 +90,14 @@ class SoundListViewModel @Inject constructor(
         }
 
     fun onSoundPressed(sound: Sound, context: Context) {
+        playSound(sound, context)
+    }
+
+    private fun playSound(
+        sound: Sound,
+        context: Context,
+        onCompletionListener: () -> Unit = { }
+    ) {
         if (sound is ResourceSound) {
             mediaPlayer.reset()
             val descriptor =
@@ -98,6 +110,9 @@ class SoundListViewModel @Inject constructor(
             descriptor.close()
 
             mediaPlayer.prepare()
+            mediaPlayer.setOnCompletionListener {
+                onCompletionListener()
+            }
             mediaPlayer.setVolume(1f, 1f)
             mediaPlayer.isLooping = false
             mediaPlayer.start()
@@ -164,6 +179,27 @@ class SoundListViewModel @Inject constructor(
 
             _viewState.value =
                 getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
+        }
+    }
+
+    fun onBackButtonPressed(context: Context) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val goodbyeSound = ResourceSound(
+                    name = "Whatever",
+                    category = SoundCategory(
+                        name = "whatever",
+                        assetsPath = "sounds/stonoga"
+                    ),
+                    relativeAssetPath = "na razie.mp3"
+                )
+
+                playSound(
+                    sound = goodbyeSound,
+                    context = context,
+                    onCompletionListener = { (context as? Activity)?.finish() }
+                )
+            }
         }
     }
 

@@ -7,6 +7,7 @@ package uvis.irin.grape.soundlist.ui
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
+import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
 
@@ -53,6 +55,7 @@ fun SoundListContent(
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
+    onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
     Box(
@@ -73,6 +76,7 @@ fun SoundListContent(
                     onSoundPressed = onSoundPressed,
                     onSoundLongPressed = onSoundLongPressed,
                     onCategorySelected = onCategorySelected,
+                    onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
             }
@@ -86,9 +90,15 @@ fun LoadedSoundListContent(
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
+    onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    BackHandler {
+        onBackButtonPressed(context)
+    }
 
     SoundListSnackbar(
         errorMessage = viewState.errorMessage,
@@ -119,7 +129,6 @@ fun LoadedSoundListContent(
                 .padding(10.dp)
         ) {
             items(viewState.sounds) { sound ->
-                val context = LocalContext.current
                 GrapeButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onSoundPressed(sound, context) },
@@ -229,6 +238,7 @@ private fun SoundListContentPreview() {
             onSoundPressed = { _, _ -> },
             onSoundLongPressed = { _, _ -> },
             onCategorySelected = { },
+            onBackButtonPressed = { },
             onErrorSnackbarDismissed = { }
         )
     }
