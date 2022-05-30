@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,9 +41,6 @@ import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
@@ -56,6 +52,7 @@ fun SoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onCategorySelected: (category: SoundCategory) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
     Box(
@@ -75,6 +72,7 @@ fun SoundListContent(
                     viewState,
                     onSoundPressed = onSoundPressed,
                     onSoundLongPressed = onSoundLongPressed,
+                    onCategorySelected = onCategorySelected,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
             }
@@ -87,9 +85,9 @@ fun LoadedSoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onCategorySelected: (category: SoundCategory) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
-    val pagerState = rememberPagerState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     SoundListSnackbar(
@@ -103,7 +101,8 @@ fun LoadedSoundListContent(
         topBar = {
             SoundSectionTabBar(
                 categories = viewState.categories,
-                pagerState = pagerState,
+                selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+                onCategorySelected = onCategorySelected
             )
         },
         bottomBar = {
@@ -115,27 +114,22 @@ fun LoadedSoundListContent(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
-            HorizontalPager(
-                state = pagerState,
-                count = viewState.categories.size,
-                modifier = Modifier.fillMaxSize()
+            LazyColumn(
+                modifier = Modifier
+                    .padding(10.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(10.dp)
-                ) {
-                    items(viewState.sounds) { sound ->
-                        val context = LocalContext.current
-                        GrapeButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = { onSoundPressed(sound, context) },
-                            onLongClick = { onSoundLongPressed(sound, context) }
-                        ) {
-                            Text(text = sound.name)
-                        }
+                items(viewState.sounds) { sound ->
+                    val context = LocalContext.current
+                    GrapeButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onSoundPressed(sound, context) },
+                        onLongClick = { onSoundLongPressed(sound, context) }
+                    ) {
+                        Text(text = sound.name)
                     }
                 }
             }
+
         }
     }
 }
@@ -170,11 +164,15 @@ private fun SoundListSnackbar(
 }
 
 @Composable
-private fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: PagerState) {
+private fun SoundSectionTabBar(
+    categories: List<SoundCategory>,
+    selectedTabIndex: Int,
+    onCategorySelected: (category: SoundCategory) -> Unit
+) {
     val scope = rememberCoroutineScope()
 
     ScrollableTabRow(
-        selectedTabIndex = pagerState.currentPage,
+        selectedTabIndex = selectedTabIndex,
         indicator = { },
         edgePadding = 8.dp,
         modifier = Modifier.padding(
@@ -187,12 +185,8 @@ private fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: Page
         categories.forEachIndexed { index, category ->
             SoundSectionTab(
                 text = category.name,
-                selected = pagerState.currentPage == index,
-                onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                },
+                selected = selectedTabIndex == index,
+                onClick = { onCategorySelected(category) },
             )
         }
     }
@@ -238,6 +232,7 @@ private fun SoundListContentPreview() {
             viewState = SoundListViewState(),
             onSoundPressed = { _, _ -> },
             onSoundLongPressed = { _, _ -> },
+            onCategorySelected = { },
             onErrorSnackbarDismissed = { }
         )
     }

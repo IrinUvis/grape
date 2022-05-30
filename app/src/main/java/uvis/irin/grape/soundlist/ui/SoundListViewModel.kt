@@ -19,6 +19,7 @@ import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.Sound
+import uvis.irin.grape.soundlist.domain.model.SoundCategory
 import uvis.irin.grape.soundlist.domain.usecase.GetAllSoundsByCategoryUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetSoundCategoriesUseCase
 import java.io.File
@@ -46,32 +47,35 @@ class SoundListViewModel @Inject constructor(
             _viewState.value = when (getSoundCategoriesResult) {
                 is Result.Success -> {
                     _viewState.value.copy(
-                        showLoading = false,
-                        categories = getSoundCategoriesResult.data
+                        categories = getSoundCategoriesResult.data,
+                        selectedCategory = getSoundCategoriesResult.data.first()
                     )
                 }
                 is Result.Error -> {
                     _viewState.value.copy(
-                        showLoading = false,
                         categories = emptyList()
                     )
                 }
             }
 
-            val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase.invoke(
-                _viewState.value.categories.first()
-            )
+            val initialCategory = _viewState.value.selectedCategory
 
-            _viewState.value = when (getAllSoundsByCategoryResult) {
-                is Result.Success -> {
-                    _viewState.value.copy(
-                        sounds = getAllSoundsByCategoryResult.data
-                    )
-                }
-                is Result.Error -> {
-                    _viewState.value.copy(
-                        sounds = emptyList()
-                    )
+            if (initialCategory != null) {
+                val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(initialCategory)
+
+                _viewState.value = when (getAllSoundsByCategoryResult) {
+                    is Result.Success -> {
+                        _viewState.value.copy(
+                            showLoading = false,
+                            sounds = getAllSoundsByCategoryResult.data
+                        )
+                    }
+                    is Result.Error -> {
+                        _viewState.value.copy(
+                            showLoading = false,
+                            sounds = emptyList()
+                        )
+                    }
                 }
             }
         }
@@ -141,6 +145,14 @@ class SoundListViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun onCategorySelected(category: SoundCategory) {
+        _viewState.update {
+            it.copy(
+                selectedCategory = category
+            )
         }
     }
 
