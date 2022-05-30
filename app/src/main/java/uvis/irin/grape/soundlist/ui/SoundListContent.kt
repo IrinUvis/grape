@@ -113,9 +113,9 @@ fun LoadedSoundListContent(
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
             LazyColumn(
                 modifier = Modifier
+                    .padding(paddingValues)
                     .padding(10.dp)
             ) {
                 items(viewState.sounds) { sound ->
@@ -129,7 +129,6 @@ fun LoadedSoundListContent(
                     }
                 }
             }
-        }
     }
 }
 

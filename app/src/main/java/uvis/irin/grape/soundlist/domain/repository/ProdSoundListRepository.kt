@@ -51,19 +51,28 @@ class ProdSoundListRepository @Inject constructor(
         }
     }
 
-    override fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>> {
-        val am = context.assets
+    override suspend fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>> {
 
-        val sounds = am.list(category.assetsPath)?.map { filename ->
-            ResourceSound(
-                name = filename
-                    .replaceFirstChar { it.uppercase() }
-                    .replace("\\.\\w+$".toRegex(), ""),
-                category = category,
-                relativeAssetPath = filename
-            )
-        } ?: emptyList()
+        return withContext(coroutineDispatcher) {
+            val am = context.assets
 
-        return Result.Success(sounds)
+            // IDE flags this, but it should be fine
+            // https://stackoverflow.com/questions/59684138/android-and-kotlin-coroutines-inappropriate-blocking-method-call
+            val filenames = am.list(category.assetsPath)
+
+            filenames?.let { filename ->
+                Result.Success(
+                    data = filename.map {
+                        ResourceSound(
+                            name = it
+                                .replaceFirstChar { it.uppercase() }
+                                .replace("\\.\\w+$".toRegex(), ""),
+                            category = category,
+                            relativeAssetPath = it
+                        )
+                    }
+                )
+            } ?: Result.Error(error = IOException("Cannot read assets"))
+        }
     }
 }

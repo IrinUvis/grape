@@ -63,23 +63,27 @@ class SoundListViewModel @Inject constructor(
             if (initialCategory != null) {
                 val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(initialCategory)
 
-                _viewState.value = when (getAllSoundsByCategoryResult) {
-                    is Result.Success -> {
-                        _viewState.value.copy(
-                            showLoading = false,
-                            sounds = getAllSoundsByCategoryResult.data
-                        )
-                    }
-                    is Result.Error -> {
-                        _viewState.value.copy(
-                            showLoading = false,
-                            sounds = emptyList()
-                        )
-                    }
-                }
+                _viewState.value =
+                    getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
             }
         }
     }
+
+    private fun getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult: Result<List<Sound>>) =
+        when (getAllSoundsByCategoryResult) {
+            is Result.Success -> {
+                _viewState.value.copy(
+                    showLoading = false,
+                    sounds = getAllSoundsByCategoryResult.data
+                )
+            }
+            is Result.Error -> {
+                _viewState.value.copy(
+                    showLoading = false,
+                    sounds = emptyList()
+                )
+            }
+        }
 
     fun onSoundPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
@@ -149,10 +153,17 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun onCategorySelected(category: SoundCategory) {
-        _viewState.update {
-            it.copy(
-                selectedCategory = category
-            )
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    selectedCategory = category
+                )
+            }
+
+            val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(category)
+
+            _viewState.value =
+                getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
         }
     }
 

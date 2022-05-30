@@ -8,5 +8,5 @@ interface SoundListRepository {
 
     suspend fun fetchAllCategories(): Result<List<SoundCategory>>
 
-    fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>>
+    suspend fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>>
 }

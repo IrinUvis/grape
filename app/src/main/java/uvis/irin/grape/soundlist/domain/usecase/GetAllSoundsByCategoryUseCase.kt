@@ -6,5 +6,5 @@ import uvis.irin.grape.soundlist.domain.model.SoundCategory
 
 interface GetAllSoundsByCategoryUseCase {
 
-    operator fun invoke(category: SoundCategory): Result<List<Sound>>
+    suspend operator fun invoke(category: SoundCategory): Result<List<Sound>>
 }
