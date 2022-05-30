@@ -3,7 +3,6 @@ package uvis.irin.grape.soundlist.domain.usecase
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
-import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
 import uvis.irin.grape.soundlist.domain.repository.SoundListRepository
 import javax.inject.Inject
 

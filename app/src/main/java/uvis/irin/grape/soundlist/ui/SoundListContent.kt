@@ -113,22 +113,22 @@ fun LoadedSoundListContent(
             )
         }
     ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .padding(10.dp)
-            ) {
-                items(viewState.sounds) { sound ->
-                    val context = LocalContext.current
-                    GrapeButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { onSoundPressed(sound, context) },
-                        onLongClick = { onSoundLongPressed(sound, context) }
-                    ) {
-                        Text(text = sound.name)
-                    }
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(10.dp)
+        ) {
+            items(viewState.sounds) { sound ->
+                val context = LocalContext.current
+                GrapeButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onSoundPressed(sound, context) },
+                    onLongClick = { onSoundLongPressed(sound, context) }
+                ) {
+                    Text(text = sound.name)
                 }
             }
+        }
     }
 }
 
