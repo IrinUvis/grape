@@ -20,12 +20,12 @@ class ProdSoundListRepository @Inject constructor(
         return Result.Success(
             data = listOf(
                 SoundCategory(name = "Stonoga", assetsPath = "stonoga"),
-                SoundCategory(name = "Jagoda", assetsPath = "stonoga"),
-                SoundCategory(name = "Brozi", assetsPath = "stonoga"),
-                SoundCategory(name = "Polska", assetsPath = "stonoga"),
-                SoundCategory(name = "Jail", assetsPath = "stonoga"),
-                SoundCategory(name = "Ochelska", assetsPath = "stonoga"),
-                SoundCategory(name = "CKaE", assetsPath = "stonoga"),
+                SoundCategory(name = "Jagoda", assetsPath = "jagoda"),
+                SoundCategory(name = "Brozi", assetsPath = "brozi"),
+                SoundCategory(name = "Polska", assetsPath = "polska"),
+                SoundCategory(name = "Jail", assetsPath = "jail"),
+                SoundCategory(name = "Ochelska", assetsPath = "ochelska"),
+                SoundCategory(name = "CKaE", assetsPath = "ckae"),
             ),
         )
     }

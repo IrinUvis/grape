@@ -33,13 +33,15 @@ class SoundListViewModel @Inject constructor(
     private val getSoundCategoriesUseCase: GetSoundCategoriesUseCase,
     private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase
 ) : ViewModel() {
+    private val mediaPlayer: MediaPlayer = MediaPlayer()
+
     private val _viewState: MutableStateFlow<SoundListViewState> =
         MutableStateFlow(SoundListViewState())
     val viewState: StateFlow<SoundListViewState> = _viewState
 
     init {
         viewModelScope.launch {
-            val getSoundCategoriesResult = getSoundCategoriesUseCase.invoke()
+            val getSoundCategoriesResult = getSoundCategoriesUseCase()
 
             _viewState.value = when (getSoundCategoriesResult) {
                 is Result.Success -> {
@@ -77,7 +79,7 @@ class SoundListViewModel @Inject constructor(
 
     fun onSoundPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
-            val mediaPlayer = MediaPlayer()
+            mediaPlayer.reset()
             val descriptor =
                 context.assets.openFd(sound.completePath)
             mediaPlayer.setDataSource(
@@ -157,5 +159,10 @@ class SoundListViewModel @Inject constructor(
         while (inStream.read(buffer).also { read = it } != -1) {
             outStream.write(buffer, 0, read)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mediaPlayer.release()
     }
 }
