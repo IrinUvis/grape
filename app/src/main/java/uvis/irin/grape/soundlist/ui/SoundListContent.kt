@@ -22,8 +22,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +54,8 @@ import uvis.irin.grape.soundlist.domain.model.SoundCategory
 fun SoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundLongPressed: (sound: Sound, context: Context) -> Unit
+    onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onErrorSnackbarDismissed: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -64,7 +73,8 @@ fun SoundListContent(
                 LoadedSoundListContent(
                     viewState,
                     onSoundPressed = onSoundPressed,
-                    onSoundLongPressed = onSoundLongPressed
+                    onSoundLongPressed = onSoundLongPressed,
+                    onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
             }
         }
@@ -76,10 +86,19 @@ fun LoadedSoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onErrorSnackbarDismissed: () -> Unit
 ) {
     val pagerState = rememberPagerState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    SoundListSnackbar(
+        errorMessage = viewState.errorMessage,
+        snackbarHostState = snackbarHostState,
+        onErrorSnackbarDismissed = onErrorSnackbarDismissed
+    )
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             SoundSectionTabBar(
                 categories = viewState.categories,
@@ -114,7 +133,32 @@ fun LoadedSoundListContent(
 }
 
 @Composable
-fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: PagerState) {
+private fun SoundListSnackbar(
+    errorMessage: String?,
+    snackbarHostState: SnackbarHostState,
+    onErrorSnackbarDismissed: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    if (errorMessage != null) {
+        LaunchedEffect(snackbarHostState) {
+            coroutineScope.launch {
+                val snackbarResult = snackbarHostState.showSnackbar(
+                    message = errorMessage,
+                    duration = SnackbarDuration.Short,
+                )
+
+                when (snackbarResult) {
+                    SnackbarResult.Dismissed -> { onErrorSnackbarDismissed() }
+                    SnackbarResult.ActionPerformed -> { onErrorSnackbarDismissed() }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: PagerState) {
     val scope = rememberCoroutineScope()
 
     ScrollableTabRow(
@@ -143,7 +187,7 @@ fun SoundSectionTabBar(categories: List<SoundCategory>, pagerState: PagerState) 
 }
 
 @Composable
-fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
+private fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
     val cardColors = if (selected) {
         CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -181,7 +225,8 @@ private fun SoundListContentPreview() {
         LoadedSoundListContent(
             viewState = SoundListViewState(),
             onSoundPressed = { _, _ -> },
-            onSoundLongPressed = { _, _ -> }
+            onSoundLongPressed = { _, _ -> },
+            onErrorSnackbarDismissed = { }
         )
     }
 }

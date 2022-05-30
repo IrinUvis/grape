@@ -13,6 +13,7 @@ fun SoundListScreen(
     SoundListContent(
         viewState = viewState.value,
         onSoundPressed = viewModel::onSoundPressed,
-        onSoundLongPressed = viewModel::onSoundLongPressed
+        onSoundLongPressed = viewModel::onSoundLongPressed,
+        onErrorSnackbarDismissed = viewModel::onErrorSnackbarDismissed
     )
 }

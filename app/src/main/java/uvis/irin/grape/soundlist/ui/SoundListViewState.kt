@@ -7,4 +7,5 @@ data class SoundListViewState(
     val showLoading: Boolean = true,
     val categories: List<SoundCategory> = emptyList(),
     val sounds: List<Sound> = emptyList(),
+    val errorMessage: String? = null,
 )

@@ -1,5 +1,6 @@
 package uvis.irin.grape.soundlist.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,6 +13,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
@@ -25,7 +28,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
-
 
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
@@ -78,7 +80,7 @@ class SoundListViewModel @Inject constructor(
         if (sound is ResourceSound) {
             val mediaPlayer = MediaPlayer()
             val descriptor =
-                context.assets.openFd("${sound.category.assetsPath}/${sound.relativeAssetPath}")
+                context.assets.openFd(sound.completePath)
             mediaPlayer.setDataSource(
                 descriptor.fileDescriptor,
                 descriptor.startOffset,
@@ -93,12 +95,12 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     fun onSoundLongPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
-            @Suppress("SwallowedException")
             try {
                 val inStream =
-                    context.assets.open("${sound.category.assetsPath}/${sound.relativeAssetPath}")
+                    context.assets.open(sound.completePath)
                 val soundTempFile = File.createTempFile("sound", ".mp3")
                 copyFile(inStream, FileOutputStream(soundTempFile))
 
@@ -129,9 +131,23 @@ class SoundListViewModel @Inject constructor(
             } catch (ex: IOException) {
                 Log.e(
                     "Sound sharing",
-                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared"
+                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared",
+                    ex
                 )
+                _viewState.update {
+                    it.copy(
+                        errorMessage = "Cannot share the file"
+                    )
+                }
             }
+        }
+    }
+
+    fun onErrorSnackbarDismissed() {
+        _viewState.update {
+            it.copy(
+                errorMessage = null
+            )
         }
     }
 
