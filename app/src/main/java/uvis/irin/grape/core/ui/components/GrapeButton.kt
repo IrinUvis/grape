@@ -5,14 +5,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -35,11 +35,10 @@ fun GrapeButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    elevation: CardElevation? = CardDefaults.cardElevation(),
     shape: Shape = Shapes.Full,
     border: BorderStroke? = null,
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    colors: CardColors = CardDefaults.cardColors(),
     content: @Composable RowScope.() -> Unit
 ) {
     val containerColor = colors.containerColor(enabled).value
@@ -52,7 +51,7 @@ fun GrapeButton(
             .padding(vertical = 4.dp)
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
             ),
         shape = shape,
         color = containerColor,
@@ -69,7 +68,10 @@ fun GrapeButton(
                             minWidth = ButtonDefaults.MinWidth,
                             minHeight = ButtonDefaults.MinHeight
                         )
-                        .padding(contentPadding),
+                        .combinedClickable(
+                            onClick = onClick,
+                            onLongClick = onLongClick,
+                        ),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     content = content

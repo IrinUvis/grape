@@ -8,19 +8,31 @@ package uvis.irin.grape.soundlist.ui
 import android.content.Context
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -31,8 +43,11 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,7 +60,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
-import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
 
@@ -129,13 +143,60 @@ fun LoadedSoundListContent(
                 .padding(10.dp)
         ) {
             items(viewState.sounds) { sound ->
-                GrapeButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onSoundPressed(sound, context) },
-                    onLongClick = { onSoundLongPressed(sound, context) }
-                ) {
-                    Text(text = sound.name)
+                SoundButton(sound = sound, onSoundPressed = onSoundPressed, onSoundLongPressed = onSoundLongPressed)
+            }
+        }
+    }
+}
+
+@Composable
+fun SoundButton(
+    sound: Sound,
+    onSoundPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundLongPressed: (sound: Sound, context: Context) -> Unit
+) {
+    var checked by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    GrapeButton(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { onSoundPressed(sound, context) },
+        onLongClick = { onSoundLongPressed(sound, context) }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = sound.name,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            @Suppress("MagicNumber")
+            val size by animateDpAsState(
+                targetValue = if (checked) 26.dp else 24.dp,
+                animationSpec = keyframes {
+                    durationMillis = 250
+                    24.dp at 0 with LinearOutSlowInEasing
+                    26.dp at 15 with FastOutLinearInEasing
+                    30.dp at 75
+                    28.dp at 150
                 }
+            )
+
+            IconToggleButton(
+                checked = checked,
+                onCheckedChange = { checked = !checked }
+            ) {
+                Icon(
+                    imageVector = if (checked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    modifier = Modifier.size(size),
+                    contentDescription = null,
+                )
             }
         }
     }

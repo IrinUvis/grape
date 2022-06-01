@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -93,32 +92,6 @@ class SoundListViewModel @Inject constructor(
         playSound(sound, context)
     }
 
-    private fun playSound(
-        sound: Sound,
-        context: Context,
-        onCompletionListener: () -> Unit = { }
-    ) {
-        if (sound is ResourceSound) {
-            mediaPlayer.reset()
-            val descriptor =
-                context.assets.openFd(sound.completePath)
-            mediaPlayer.setDataSource(
-                descriptor.fileDescriptor,
-                descriptor.startOffset,
-                descriptor.length
-            )
-            descriptor.close()
-
-            mediaPlayer.prepare()
-            mediaPlayer.setOnCompletionListener {
-                onCompletionListener()
-            }
-            mediaPlayer.setVolume(1f, 1f)
-            mediaPlayer.isLooping = false
-            mediaPlayer.start()
-        }
-    }
-
     @SuppressLint("QueryPermissionsNeeded")
     fun onSoundLongPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
@@ -186,9 +159,9 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val goodbyeSound = ResourceSound(
-                    name = "Whatever",
+                    name = "Na razie",
                     category = SoundCategory(
-                        name = "whatever",
+                        name = "Stonoga",
                         assetsPath = "sounds/stonoga"
                     ),
                     relativeAssetPath = "na razie.mp3"
@@ -217,6 +190,32 @@ class SoundListViewModel @Inject constructor(
         var read: Int
         while (inStream.read(buffer).also { read = it } != -1) {
             outStream.write(buffer, 0, read)
+        }
+    }
+
+    private fun playSound(
+        sound: Sound,
+        context: Context,
+        onCompletionListener: () -> Unit = { }
+    ) {
+        if (sound is ResourceSound) {
+            mediaPlayer.reset()
+            val descriptor =
+                context.assets.openFd(sound.completePath)
+            mediaPlayer.setDataSource(
+                descriptor.fileDescriptor,
+                descriptor.startOffset,
+                descriptor.length
+            )
+            descriptor.close()
+
+            mediaPlayer.prepare()
+            mediaPlayer.setOnCompletionListener {
+                onCompletionListener()
+            }
+            mediaPlayer.setVolume(1f, 1f)
+            mediaPlayer.isLooping = false
+            mediaPlayer.start()
         }
     }
 
