@@ -93,7 +93,7 @@ class SoundListViewModel @Inject constructor(
     }
 
     @SuppressLint("QueryPermissionsNeeded")
-    fun onSoundLongPressed(sound: Sound, context: Context) {
+    fun onSoundShareButtonPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
             try {
                 val inStream =

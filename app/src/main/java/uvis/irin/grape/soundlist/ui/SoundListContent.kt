@@ -13,52 +13,25 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.launch
-import uvis.irin.grape.core.ui.components.GrapeButton
+//import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
@@ -67,7 +40,7 @@ import uvis.irin.grape.soundlist.domain.model.SoundCategory
 fun SoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
@@ -88,7 +61,7 @@ fun SoundListContent(
                 LoadedSoundListContent(
                     viewState,
                     onSoundPressed = onSoundPressed,
-                    onSoundLongPressed = onSoundLongPressed,
+                    onSoundShareButtonPressed = onSoundShareButtonPressed,
                     onCategorySelected = onCategorySelected,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
@@ -102,7 +75,7 @@ fun SoundListContent(
 fun LoadedSoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundLongPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
@@ -132,7 +105,7 @@ fun LoadedSoundListContent(
         bottomBar = {
             Spacer(
                 modifier = Modifier
-                    .navigationBarsHeight()
+                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
                     .fillMaxWidth()
             )
         }
@@ -143,61 +116,74 @@ fun LoadedSoundListContent(
                 .padding(10.dp)
         ) {
             items(viewState.sounds) { sound ->
-                SoundButton(sound = sound, onSoundPressed = onSoundPressed, onSoundLongPressed = onSoundLongPressed)
+                SoundRow(
+                    sound = sound,
+                    onSoundPressed = onSoundPressed,
+                    onSoundShareButtonPressed = onSoundShareButtonPressed,
+                )
+                Divider()
             }
+
         }
     }
 }
 
 @Composable
-fun SoundButton(
+fun SoundRow(
     sound: Sound,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundLongPressed: (sound: Sound, context: Context) -> Unit
+    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit
 ) {
-    var checked by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
 
-    GrapeButton(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { onSoundPressed(sound, context) },
-        onLongClick = { onSoundLongPressed(sound, context) }
+    var isLiked by rememberSaveable { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End,
     ) {
-        Row(
+        FilledTonalButton(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .weight(1f)
+                .padding(vertical = 6.dp),
+
+            onClick = { onSoundPressed(sound, context) },
         ) {
             Text(
                 text = sound.name,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleMedium
             )
+        }
 
-            @Suppress("MagicNumber")
-            val size by animateDpAsState(
-                targetValue = if (checked) 26.dp else 24.dp,
-                animationSpec = keyframes {
-                    durationMillis = 250
-                    24.dp at 0 with LinearOutSlowInEasing
-                    26.dp at 15 with FastOutLinearInEasing
-                    30.dp at 75
-                    28.dp at 150
-                }
-            )
-
-            IconToggleButton(
-                checked = checked,
-                onCheckedChange = { checked = !checked }
-            ) {
-                Icon(
-                    imageVector = if (checked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    modifier = Modifier.size(size),
-                    contentDescription = null,
-                )
+        @Suppress("MagicNumber")
+        val size by animateDpAsState(
+            targetValue = if (isLiked) 26.dp else 24.dp,
+            animationSpec = keyframes {
+                durationMillis = 250
+                24.dp at 0 with LinearOutSlowInEasing
+                26.dp at 15 with FastOutLinearInEasing
+                30.dp at 75
+                28.dp at 150
             }
+        )
+
+        IconToggleButton(checked = isLiked, onCheckedChange = { isLiked = !isLiked }) {
+            Icon(
+                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                modifier = Modifier.size(size),
+                contentDescription = null,
+            )
+        }
+
+        IconButton(onClick = { onSoundShareButtonPressed(sound, context) }) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = null
+            )
         }
     }
 }
@@ -242,10 +228,7 @@ private fun SoundSectionTabBar(
         indicator = { },
         edgePadding = 8.dp,
         modifier = Modifier.padding(
-            rememberInsetsPaddingValues(
-                LocalWindowInsets.current.statusBars,
-                applyBottom = false,
-            ),
+            WindowInsets.statusBars.asPaddingValues()
         ),
     ) {
         categories.forEachIndexed { index, category ->
@@ -297,7 +280,7 @@ private fun SoundListContentPreview() {
         LoadedSoundListContent(
             viewState = SoundListViewState(),
             onSoundPressed = { _, _ -> },
-            onSoundLongPressed = { _, _ -> },
+            onSoundShareButtonPressed = { _, _ -> },
             onCategorySelected = { },
             onBackButtonPressed = { },
             onErrorSnackbarDismissed = { }

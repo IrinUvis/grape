@@ -1,6 +1,7 @@
 package uvis.irin.grape.core.ui.theme
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -13,7 +14,7 @@ import androidx.core.os.BuildCompat
 @SuppressLint("NewApi")
 fun GrapeTheme(
     isDark: Boolean = isSystemInDarkTheme(),
-    dynamic: Boolean = BuildCompat.isAtLeastS(),
+    dynamic: Boolean = Build.VERSION.SDK_INT >= 31,
     content: @Composable() () -> Unit
 ) {
     val colors = when {

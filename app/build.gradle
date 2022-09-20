@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "uvis.irin.grape"
         minSdk 21
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -33,14 +33,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion rootProject.ext.versions.compose
-        kotlinCompilerVersion kotlinVersion
+        kotlinCompilerExtensionVersion rootProject.ext.versions.composeCompiler
     }
     packagingOptions {
         resources {

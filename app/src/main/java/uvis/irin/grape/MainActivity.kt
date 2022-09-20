@@ -37,10 +37,8 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                ProvideWindowInsets {
-                    Surface(modifier = Modifier.fillMaxSize()) {
-                        SoundListScreen()
-                    }
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    SoundListScreen()
                 }
             }
         }
