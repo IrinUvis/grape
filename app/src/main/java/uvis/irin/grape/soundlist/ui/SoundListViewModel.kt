@@ -51,7 +51,9 @@ class SoundListViewModel @Inject constructor(
                 is Result.Success -> {
                     _viewState.value.copy(
                         categories = getSoundCategoriesResult.data,
-                        selectedCategory = getSoundCategoriesResult.data.first()
+                        subcategories = getSoundCategoriesResult.data.first().subcategories,
+                        selectedCategory = getSoundCategoriesResult.data.first(),
+                        selectedSubcategory = getSoundCategoriesResult.data.first().subcategories?.firstOrNull()
                     )
                 }
                 is Result.Error -> {
@@ -61,7 +63,8 @@ class SoundListViewModel @Inject constructor(
                 }
             }
 
-            val initialCategory = _viewState.value.selectedCategory
+            val initialCategory =
+                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory else _viewState.value.selectedCategory
 
             if (initialCategory != null) {
                 val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(initialCategory)
@@ -144,7 +147,29 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             _viewState.update {
                 it.copy(
-                    selectedCategory = category
+                    selectedCategory = category,
+                    subcategories = category.subcategories,
+                    selectedSubcategory = category.subcategories?.firstOrNull()
+                )
+            }
+
+            val currentCategory =
+                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory else _viewState.value.selectedCategory
+
+            if (currentCategory != null) {
+                val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(currentCategory)
+
+                _viewState.value =
+                    getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
+            }
+        }
+    }
+
+    fun onSubcategorySelected(category: SoundCategory) {
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    selectedSubcategory = category
                 )
             }
 
@@ -162,6 +187,7 @@ class SoundListViewModel @Inject constructor(
                     name = "Na razie",
                     category = SoundCategory(
                         name = "Stonoga",
+                        subcategories = null,
                         assetsPath = "sounds/stonoga"
                     ),
                     relativeAssetPath = "Na razie.mp3"

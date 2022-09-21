@@ -7,6 +7,8 @@ data class SoundListViewState(
     val showLoading: Boolean = true,
     val categories: List<SoundCategory> = emptyList(),
     val selectedCategory: SoundCategory? = null,
+    val subcategories: List<SoundCategory>? = null,
+    val selectedSubcategory: SoundCategory? = null,
     val sounds: List<Sound> = emptyList(),
     val errorMessage: String? = null,
 )

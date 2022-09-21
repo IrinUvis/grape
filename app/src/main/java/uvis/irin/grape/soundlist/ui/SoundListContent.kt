@@ -7,12 +7,14 @@ package uvis.irin.grape.soundlist.ui
 import android.content.Context
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -72,6 +74,7 @@ fun SoundListContent(
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
+    onSubcategorySelected: (category: SoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -93,6 +96,7 @@ fun SoundListContent(
                     onSoundPressed = onSoundPressed,
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
                     onCategorySelected = onCategorySelected,
+                    onSubcategorySelected = onSubcategorySelected,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
@@ -108,6 +112,7 @@ fun LoadedSoundListContent(
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
     onCategorySelected: (category: SoundCategory) -> Unit,
+    onSubcategorySelected: (category: SoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -127,11 +132,25 @@ fun LoadedSoundListContent(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            SoundSectionTabBar(
-                categories = viewState.categories,
-                selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
-                onCategorySelected = onCategorySelected
-            )
+            Column {
+                SoundSectionTabBar(
+                    categories = viewState.categories,
+                    selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+                    onCategorySelected = onCategorySelected,
+                    modifier = Modifier.padding(
+                        WindowInsets.statusBars.asPaddingValues()
+                    )
+                )
+                AnimatedVisibility(visible = viewState.subcategories != null) {
+                    viewState.subcategories?.let {
+                        SoundSectionTabBar(
+                            categories = it,
+                            selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
+                            onCategorySelected = onSubcategorySelected
+                        )
+                    }
+                }
+            }
         },
         bottomBar = {
             Spacer(
@@ -251,14 +270,13 @@ private fun SoundListSnackbar(
 private fun SoundSectionTabBar(
     categories: List<SoundCategory>,
     selectedTabIndex: Int,
-    onCategorySelected: (category: SoundCategory) -> Unit
+    onCategorySelected: (category: SoundCategory) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         edgePadding = 0.dp,
-        modifier = Modifier.padding(
-            WindowInsets.statusBars.asPaddingValues()
-        ),
+        modifier = modifier,
     ) {
         categories.forEachIndexed { index, category ->
             Tab(
@@ -267,28 +285,5 @@ private fun SoundSectionTabBar(
                 onClick = { onCategorySelected(category) },
             )
         }
-    }
-}
-
-@Preview(
-    name = "Night Mode - Empty",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Preview(
-    name = "Day Mode - Empty",
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Suppress("UnusedPrivateMember")
-@Composable
-private fun SoundListContentPreview() {
-    GrapeTheme {
-        LoadedSoundListContent(
-            viewState = SoundListViewState(),
-            onSoundPressed = { _, _ -> },
-            onSoundShareButtonPressed = { _, _ -> },
-            onCategorySelected = { },
-            onBackButtonPressed = { },
-            onErrorSnackbarDismissed = { }
-        )
     }
 }

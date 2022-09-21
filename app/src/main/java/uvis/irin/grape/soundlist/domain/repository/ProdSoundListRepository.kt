@@ -19,7 +19,7 @@ class ProdSoundListRepository @Inject constructor(
 ) : SoundListRepository {
 
     companion object {
-        const val ASSET_PATH = "sounds"
+        const val ASSET_SOUNDS_PATH = "sounds"
     }
 
     override suspend fun fetchAllCategories(): Result<List<SoundCategory>> {
@@ -28,24 +28,40 @@ class ProdSoundListRepository @Inject constructor(
 
             // IDE flags this, but it should be fine
             // https://stackoverflow.com/questions/59684138/android-and-kotlin-coroutines-inappropriate-blocking-method-call
-            val directories = am.list(ASSET_PATH)
-
-            directories?.let { directory ->
+            am.list(ASSET_SOUNDS_PATH)?.let { directories ->
                 Result.Success(
-                    data = directory.map {
+                    data = directories.map { directory ->
+                        val subcategories =
+                            am.list("$ASSET_SOUNDS_PATH/$directory")
+                                ?.filter { !it.endsWith(".mp3") }
+                                .takeIf { it.orEmpty().isNotEmpty() }
+                                ?.map {
+                                    SoundCategory(
+                                        name = it.split('_').last().replaceFirstChar { char ->
+                                            if (char.isLowerCase()) char.titlecase(
+                                                Locale.getDefault()
+                                            ) else char.toString()
+                                        },
+                                        subcategories = null,
+                                        assetsPath = "$ASSET_SOUNDS_PATH/$directory/$it"
+                                    )
+                                }
+
                         SoundCategory(
-                            name = it.replaceFirstChar { char ->
+                            name = directory.split('_').last().replaceFirstChar { char ->
                                 if (char.isLowerCase()) char.titlecase(
                                     Locale.ROOT
-                                ) else it.toString()
+                                ) else char.toString()
                             },
-                            assetsPath = "$ASSET_PATH/$it"
+                            subcategories = subcategories,
+                            assetsPath = "$ASSET_SOUNDS_PATH/$directory"
                         )
                     },
                 )
             } ?: Result.Error(error = IOException("Cannot read assets"))
         }
     }
+
 
     override suspend fun fetchSoundsByCategory(category: SoundCategory): Result<List<Sound>> {
 
@@ -56,12 +72,13 @@ class ProdSoundListRepository @Inject constructor(
             // https://stackoverflow.com/questions/59684138/android-and-kotlin-coroutines-inappropriate-blocking-method-call
             val filenames = am.list(category.assetsPath)
 
-            filenames?.let { filename ->
+            filenames?.filter { it.endsWith(".mp3") }?.let { soundFilenames ->
                 Result.Success(
-                    data = filename.map {
+                    data = soundFilenames.map {
                         ResourceSound(
                             name = it
-                                .replaceFirstChar { it.uppercase() }
+                                .split('_').last()
+                                .replaceFirstChar { char -> char.uppercase() }
                                 .replace("\\.\\w+$".toRegex(), ""),
                             category = category,
                             relativeAssetPath = it
