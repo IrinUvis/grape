@@ -164,7 +164,7 @@ class SoundListViewModel @Inject constructor(
                         name = "Stonoga",
                         assetsPath = "sounds/stonoga"
                     ),
-                    relativeAssetPath = "na razie.mp3"
+                    relativeAssetPath = "Na razie.mp3"
                 )
 
                 playSound(

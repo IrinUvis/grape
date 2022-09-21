@@ -1,6 +1,5 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
-    ExperimentalFoundationApi::class, ExperimentalPagerApi::class
+    ExperimentalMaterial3Api::class
 )
 
 package uvis.irin.grape.soundlist.ui
@@ -12,26 +11,57 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.launch
-//import uvis.irin.grape.core.ui.components.GrapeButton
 import uvis.irin.grape.core.ui.theme.GrapeTheme
 import uvis.irin.grape.soundlist.domain.model.Sound
 import uvis.irin.grape.soundlist.domain.model.SoundCategory
@@ -71,6 +101,7 @@ fun SoundListContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoadedSoundListContent(
     viewState: SoundListViewState,
@@ -121,9 +152,9 @@ fun LoadedSoundListContent(
                     onSoundPressed = onSoundPressed,
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
                 )
+
                 Divider()
             }
-
         }
     }
 }
@@ -148,14 +179,13 @@ fun SoundRow(
             modifier = Modifier
                 .weight(1f)
                 .padding(vertical = 6.dp),
-
             onClick = { onSoundPressed(sound, context) },
         ) {
             Text(
                 text = sound.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.labelSmall
             )
         }
 
@@ -225,43 +255,18 @@ private fun SoundSectionTabBar(
 ) {
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
-        indicator = { },
-        edgePadding = 8.dp,
+        edgePadding = 0.dp,
         modifier = Modifier.padding(
             WindowInsets.statusBars.asPaddingValues()
         ),
     ) {
         categories.forEachIndexed { index, category ->
-            SoundSectionTab(
-                text = category.name,
+            Tab(
+                text = { Text(text = category.name) },
                 selected = selectedTabIndex == index,
                 onClick = { onCategorySelected(category) },
             )
         }
-    }
-}
-
-@Composable
-private fun SoundSectionTab(text: String, selected: Boolean, onClick: () -> Unit) {
-    val cardColors = if (selected) {
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        )
-    } else {
-        CardDefaults.cardColors()
-    }
-
-    Card(
-        modifier = Modifier
-            .padding(horizontal = 4.dp),
-        colors = cardColors,
-        onClick = onClick,
-    ) {
-        Text(
-            modifier = Modifier.padding(8.dp),
-            text = text,
-        )
     }
 }
 
