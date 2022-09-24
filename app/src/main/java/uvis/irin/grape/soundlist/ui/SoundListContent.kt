@@ -5,7 +5,6 @@
 package uvis.irin.grape.soundlist.ui
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -61,20 +60,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import uvis.irin.grape.core.ui.theme.GrapeTheme
+import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 import uvis.irin.grape.soundlist.domain.model.Sound
-import uvis.irin.grape.soundlist.domain.model.SoundCategory
 
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
-    onCategorySelected: (category: SoundCategory) -> Unit,
-    onSubcategorySelected: (category: SoundCategory) -> Unit,
+    onCategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -111,8 +108,8 @@ fun LoadedSoundListContent(
     viewState: SoundListViewState,
     onSoundPressed: (sound: Sound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
-    onCategorySelected: (category: SoundCategory) -> Unit,
-    onSubcategorySelected: (category: SoundCategory) -> Unit,
+    onCategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -268,9 +265,9 @@ private fun SoundListSnackbar(
 
 @Composable
 private fun SoundSectionTabBar(
-    categories: List<SoundCategory>,
+    categories: List<ResourceSoundCategory>,
     selectedTabIndex: Int,
-    onCategorySelected: (category: SoundCategory) -> Unit,
+    onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     modifier: Modifier = Modifier
 ) {
     ScrollableTabRow(

@@ -1,6 +1,5 @@
 package uvis.irin.grape.soundlist.ui
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -12,17 +11,15 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
+import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 import uvis.irin.grape.soundlist.domain.model.Sound
-import uvis.irin.grape.soundlist.domain.model.SoundCategory
 import uvis.irin.grape.soundlist.domain.usecase.GetAllSoundsByCategoryUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetSoundCategoriesUseCase
 import java.io.File
@@ -33,6 +30,7 @@ import java.io.OutputStream
 import javax.inject.Inject
 
 @HiltViewModel
+@Suppress("TooManyFunctions")
 class SoundListViewModel @Inject constructor(
     private val getSoundCategoriesUseCase: GetSoundCategoriesUseCase,
     private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase
@@ -47,24 +45,11 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             val getSoundCategoriesResult = getSoundCategoriesUseCase()
 
-            _viewState.value = when (getSoundCategoriesResult) {
-                is Result.Success -> {
-                    _viewState.value.copy(
-                        categories = getSoundCategoriesResult.data,
-                        subcategories = getSoundCategoriesResult.data.first().subcategories,
-                        selectedCategory = getSoundCategoriesResult.data.first(),
-                        selectedSubcategory = getSoundCategoriesResult.data.first().subcategories?.firstOrNull()
-                    )
-                }
-                is Result.Error -> {
-                    _viewState.value.copy(
-                        categories = emptyList()
-                    )
-                }
-            }
+            _viewState.value = getViewStateForAllSoundCategories(getSoundCategoriesResult)
 
             val initialCategory =
-                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory else _viewState.value.selectedCategory
+                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory
+                else _viewState.value.selectedCategory
 
             if (initialCategory != null) {
                 val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(initialCategory)
@@ -75,27 +60,15 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    private fun getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult: Result<List<Sound>>) =
-        when (getAllSoundsByCategoryResult) {
-            is Result.Success -> {
-                _viewState.value.copy(
-                    showLoading = false,
-                    sounds = getAllSoundsByCategoryResult.data
-                )
-            }
-            is Result.Error -> {
-                _viewState.value.copy(
-                    showLoading = false,
-                    sounds = emptyList()
-                )
-            }
-        }
+    override fun onCleared() {
+        super.onCleared()
+        mediaPlayer.release()
+    }
 
     fun onSoundPressed(sound: Sound, context: Context) {
         playSound(sound, context)
     }
 
-    @SuppressLint("QueryPermissionsNeeded")
     fun onSoundShareButtonPressed(sound: Sound, context: Context) {
         if (sound is ResourceSound) {
             try {
@@ -143,7 +116,7 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    fun onCategorySelected(category: SoundCategory) {
+    fun onCategorySelected(category: ResourceSoundCategory) {
         viewModelScope.launch {
             _viewState.update {
                 it.copy(
@@ -154,7 +127,8 @@ class SoundListViewModel @Inject constructor(
             }
 
             val currentCategory =
-                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory else _viewState.value.selectedCategory
+                if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory
+                else _viewState.value.selectedCategory
 
             if (currentCategory != null) {
                 val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(currentCategory)
@@ -165,7 +139,7 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    fun onSubcategorySelected(category: SoundCategory) {
+    fun onSubcategorySelected(category: ResourceSoundCategory) {
         viewModelScope.launch {
             _viewState.update {
                 it.copy(
@@ -182,23 +156,21 @@ class SoundListViewModel @Inject constructor(
 
     fun onBackButtonPressed(context: Context) {
         viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                val goodbyeSound = ResourceSound(
-                    name = "Na razie",
-                    category = SoundCategory(
-                        name = "Stonoga",
-                        subcategories = null,
-                        assetsPath = "sounds/stonoga"
-                    ),
-                    relativeAssetPath = "Na razie.mp3"
-                )
+            val goodbyeSound = ResourceSound(
+                name = "Na razie",
+                category = ResourceSoundCategory(
+                    name = "Stonoga",
+                    subcategories = null,
+                    assetsPath = "sounds/4_qrwio vadis"
+                ),
+                relativeAssetPath = "Do widzenia.mp3"
+            )
 
-                playSound(
-                    sound = goodbyeSound,
-                    context = context,
-                    onCompletionListener = { (context as? Activity)?.finish() }
-                )
-            }
+            playSound(
+                sound = goodbyeSound,
+                context = context,
+                onCompletionListener = { (context as? Activity)?.finish() }
+            )
         }
     }
 
@@ -226,27 +198,75 @@ class SoundListViewModel @Inject constructor(
     ) {
         if (sound is ResourceSound) {
             mediaPlayer.reset()
-            val descriptor =
-                context.assets.openFd(sound.completePath)
-            mediaPlayer.setDataSource(
-                descriptor.fileDescriptor,
-                descriptor.startOffset,
-                descriptor.length
-            )
-            descriptor.close()
+            try {
+                val descriptor =
+                    context.assets.openFd(sound.completePath)
 
-            mediaPlayer.prepare()
-            mediaPlayer.setOnCompletionListener {
-                onCompletionListener()
+                mediaPlayer.setDataSource(
+                    descriptor.fileDescriptor,
+                    descriptor.startOffset,
+                    descriptor.length
+                )
+                descriptor.close()
+
+                mediaPlayer.prepare()
+                mediaPlayer.setOnCompletionListener {
+                    onCompletionListener()
+                }
+                mediaPlayer.setVolume(1f, 1f)
+                mediaPlayer.isLooping = false
+                mediaPlayer.start()
+            } catch (ex: IOException) {
+                Log.e(
+                    "Sound playing",
+                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be played",
+                    ex
+                )
+                _viewState.update {
+                    it.copy(
+                        errorMessage = "Cannot play sound"
+                    )
+                }
             }
-            mediaPlayer.setVolume(1f, 1f)
-            mediaPlayer.isLooping = false
-            mediaPlayer.start()
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        mediaPlayer.release()
+    private fun getViewStateForAllSoundCategories(
+        getSoundCategoriesResult: Result<List<ResourceSoundCategory>>
+    ): SoundListViewState {
+        return when (getSoundCategoriesResult) {
+            is Result.Success -> {
+                _viewState.value.copy(
+                    categories = getSoundCategoriesResult.data,
+                    subcategories = getSoundCategoriesResult.data.first().subcategories,
+                    selectedCategory = getSoundCategoriesResult.data.first(),
+                    selectedSubcategory = getSoundCategoriesResult.data.first().subcategories?.firstOrNull()
+                )
+            }
+            is Result.Error -> {
+                _viewState.value.copy(
+                    categories = emptyList()
+                )
+            }
+        }
+    }
+
+    private fun getViewStateForAllSoundsByCategoryResult(
+        getAllSoundsByCategoryResult: Result<List<ResourceSound>>
+    ): SoundListViewState {
+        return when (getAllSoundsByCategoryResult) {
+            is Result.Success -> {
+                _viewState.value.copy(
+                    showLoading = false,
+                    sounds = getAllSoundsByCategoryResult.data
+                )
+            }
+            is Result.Error -> {
+                _viewState.value.copy(
+                    showLoading = false,
+                    sounds = emptyList()
+                )
+            }
+        }
     }
 }
