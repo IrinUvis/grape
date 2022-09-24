@@ -21,7 +21,7 @@ ext {
             // https://github.com/material-components/material-components-android/releases
             material             : "1.6.1",
             // https://developer.android.com/jetpack/androidx/releases/compose-material3
-            md3                  : "1.0.0-alpha15",
+            md3                  : "1.0.0-beta02",
             // https://github.com/google/accompanist/releases
             accompanist          : "0.25.1",
             // https://developer.android.com/jetpack/androidx/releases/hilt
