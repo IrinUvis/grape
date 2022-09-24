@@ -1,15 +1,17 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
+    id "kotlin-kapt"
+    id "dagger.hilt.android.plugin"
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "uvis.irin.grape"
-        minSdk 21
-        targetSdk 31
+        minSdk 28
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -31,14 +33,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion rootProject.ext.versions.compose
-        kotlinCompilerVersion kotlinVersion
+        kotlinCompilerExtensionVersion rootProject.ext.versions.composeCompiler
     }
     packagingOptions {
         resources {
@@ -50,7 +50,7 @@ android {
             kover {
                 enabled = true
                 excludes = [
-                        "uvis.irin.grape.theme.*",
+                        "uvis.irin.grape.core.ui.theme.*",
                         ".*ComposableSingletons.*",
                         ".*Hilt.*",
                         ".*BuildConfig.*",
@@ -59,6 +59,7 @@ android {
             }
         }
     }
+    namespace 'uvis.irin.grape'
 }
 
 dependencies {
@@ -72,6 +73,10 @@ dependencies {
     implementation "androidx.compose.material3:material3:$rootProject.ext.versions.md3"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$rootProject.ext.versions.lifecycle"
     implementation "androidx.activity:activity-compose:$rootProject.ext.versions.activityCompose"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$rootProject.ext.versions.accompanist"
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-navigation-compose:$rootProject.ext.versions.hiltNavigationCompose"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
     testImplementation "junit:junit:$rootProject.ext.versions.junit"
     androidTestImplementation "androidx.test.ext:junit:$rootProject.ext.versions.androidxTest"
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.ext.versions.espresso"
