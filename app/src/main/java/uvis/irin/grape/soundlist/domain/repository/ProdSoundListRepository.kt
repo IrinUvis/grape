@@ -10,9 +10,14 @@ import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 import java.io.IOException
 import javax.inject.Inject
+import uvis.irin.grape.core.data.local.favouritesounds.FavouriteSoundDao
+import uvis.irin.grape.core.data.local.favouritesounds.toFavouriteSound
+import uvis.irin.grape.core.data.local.favouritesounds.toPersistableFavouriteSound
+import uvis.irin.grape.soundlist.domain.model.FavouriteSound
 
 class ProdSoundListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val favouriteSoundDao: FavouriteSoundDao
 ) : SoundListRepository {
 
     companion object {
@@ -58,6 +63,19 @@ class ProdSoundListRepository @Inject constructor(
                 )
             }
             ?: Result.Error(error = IOException("An error has occurred while reading the assets"))
+    }
+
+    override suspend fun fetchAllFavouriteSounds(): Result<List<FavouriteSound>> =
+        favouriteSoundDao.getAll().map { it.toFavouriteSound() }.let {
+            Result.Success(data = it)
+        }
+
+    override suspend fun insertFavouriteSound(favouriteSound: FavouriteSound) {
+        favouriteSoundDao.insertFavouriteSound(favouriteSound.toPersistableFavouriteSound())
+    }
+
+    override suspend fun deleteFavouriteSound(favouriteSound: FavouriteSound) {
+        favouriteSoundDao.deleteFavouriteSound(favouriteSound.toPersistableFavouriteSound())
     }
 
     private fun findSubcategoriesForCategory(
