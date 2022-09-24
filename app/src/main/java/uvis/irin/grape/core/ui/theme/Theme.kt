@@ -14,6 +14,7 @@ import uvis.irin.grape.core.constants.ANDROID_12_SDK_INT
  * It supports dynamic theming if the app is run on device running Android 12 or above.
  * Otherwise it uses default Dark or Light colorScheme.
  */
+@Suppress("NewApi")
 @Composable
 fun GrapeTheme(
     isDark: Boolean = isSystemInDarkTheme(),
