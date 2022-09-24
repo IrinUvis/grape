@@ -8,7 +8,7 @@ import androidx.room.Query
 @Dao
 interface FavouriteSoundDao {
     @Query("SELECT * FROM favourite_sound")
-    fun getAll(): List<PersistableFavouriteSound>
+    suspend fun getAll(): List<PersistableFavouriteSound>
 
     @Insert
     suspend fun insertFavouriteSound(favouriteSound: PersistableFavouriteSound)

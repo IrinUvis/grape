@@ -16,6 +16,7 @@ fun SoundListScreen(
         onSoundShareButtonPressed = viewModel::onSoundShareButtonPressed,
         onCategorySelected = viewModel::onCategorySelected,
         onSubcategorySelected = viewModel::onSubcategorySelected,
+        onFavouriteButtonPressed = viewModel::onFavouriteButtonPressed,
         onBackButtonPressed = viewModel::onBackButtonPressed,
         onErrorSnackbarDismissed = viewModel::onErrorSnackbarDismissed
     )

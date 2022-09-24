@@ -62,16 +62,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 import uvis.irin.grape.soundlist.domain.model.Sound
 
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -94,6 +96,7 @@ fun SoundListContent(
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
                     onCategorySelected = onCategorySelected,
                     onSubcategorySelected = onSubcategorySelected,
+                    onFavouriteButtonPressed = onFavouriteButtonPressed,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
@@ -106,10 +109,11 @@ fun SoundListContent(
 @Composable
 fun LoadedSoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -165,8 +169,10 @@ fun LoadedSoundListContent(
             items(viewState.sounds) { sound ->
                 SoundRow(
                     sound = sound,
+                    isLiked = viewState.favouriteSounds.contains(sound),
                     onSoundPressed = onSoundPressed,
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
+                    onFavouriteButtonPressed = onFavouriteButtonPressed,
                 )
 
                 Divider()
@@ -177,13 +183,13 @@ fun LoadedSoundListContent(
 
 @Composable
 fun SoundRow(
-    sound: Sound,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit
+    sound: ResourceSound,
+    isLiked: Boolean,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit
 ) {
     val context = LocalContext.current
-
-    var isLiked by rememberSaveable { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -217,7 +223,7 @@ fun SoundRow(
             }
         )
 
-        IconToggleButton(checked = isLiked, onCheckedChange = { isLiked = !isLiked }) {
+        IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             Icon(
                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                 modifier = Modifier.size(size),
