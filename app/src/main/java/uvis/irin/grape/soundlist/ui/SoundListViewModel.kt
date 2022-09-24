@@ -19,6 +19,7 @@ import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
+import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
 import uvis.irin.grape.soundlist.domain.usecase.GetAllSoundsByCategoryUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetSoundCategoriesUseCase
 import java.io.File
@@ -27,7 +28,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
-import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
 
 @HiltViewModel
 @Suppress("TooManyFunctions")

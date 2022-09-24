@@ -2,7 +2,6 @@ package uvis.irin.grape.soundlist.ui
 
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
-import uvis.irin.grape.soundlist.domain.model.Sound
 
 data class SoundListViewState(
     val showLoading: Boolean = true,

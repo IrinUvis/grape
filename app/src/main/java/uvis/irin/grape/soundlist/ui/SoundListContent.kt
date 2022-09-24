@@ -51,11 +51,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -64,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
-import uvis.irin.grape.soundlist.domain.model.Sound
 
 @Composable
 fun SoundListContent(
@@ -133,25 +129,11 @@ fun LoadedSoundListContent(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            Column {
-                SoundSectionTabBar(
-                    categories = viewState.categories,
-                    selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
-                    onCategorySelected = onCategorySelected,
-                    modifier = Modifier.padding(
-                        WindowInsets.statusBars.asPaddingValues()
-                    )
-                )
-                AnimatedVisibility(visible = viewState.subcategories != null) {
-                    viewState.subcategories?.let {
-                        SoundSectionTabBar(
-                            categories = it,
-                            selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
-                            onCategorySelected = onSubcategorySelected
-                        )
-                    }
-                }
-            }
+            SoundListTabBarSection(
+                viewState = viewState,
+                onCategorySelected = onCategorySelected,
+                onSubcategorySelected = onSubcategorySelected,
+            )
         },
         bottomBar = {
             Spacer(
@@ -270,7 +252,34 @@ private fun SoundListSnackbar(
 }
 
 @Composable
-private fun SoundSectionTabBar(
+private fun SoundListTabBarSection(
+    viewState: SoundListViewState,
+    onCategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit
+) {
+    Column {
+        SoundListTabBar(
+            categories = viewState.categories,
+            selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+            onCategorySelected = onCategorySelected,
+            modifier = Modifier.padding(
+                WindowInsets.statusBars.asPaddingValues()
+            )
+        )
+        AnimatedVisibility(visible = viewState.subcategories != null) {
+            viewState.subcategories?.let {
+                SoundListTabBar(
+                    categories = it,
+                    selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
+                    onCategorySelected = onSubcategorySelected
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SoundListTabBar(
     categories: List<ResourceSoundCategory>,
     selectedTabIndex: Int,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
