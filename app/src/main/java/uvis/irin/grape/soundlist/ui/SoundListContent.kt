@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -55,6 +56,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -70,6 +74,7 @@ fun SoundListContent(
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -93,6 +98,7 @@ fun SoundListContent(
                     onCategorySelected = onCategorySelected,
                     onSubcategorySelected = onSubcategorySelected,
                     onFavouriteButtonPressed = onFavouriteButtonPressed,
+                    onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
@@ -110,6 +116,7 @@ fun LoadedSoundListContent(
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -133,6 +140,7 @@ fun LoadedSoundListContent(
                 viewState = viewState,
                 onCategorySelected = onCategorySelected,
                 onSubcategorySelected = onSubcategorySelected,
+                onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
             )
         },
         bottomBar = {
@@ -148,7 +156,10 @@ fun LoadedSoundListContent(
                 .padding(paddingValues)
                 .padding(10.dp)
         ) {
-            items(viewState.sounds) { sound ->
+            val sounds = if (viewState.displayOnlyFavourites) viewState.sounds.filter {
+                viewState.favouriteSounds.contains(it)
+            } else viewState.sounds
+            items(sounds) { sound ->
                 SoundRow(
                     sound = sound,
                     isLiked = viewState.favouriteSounds.contains(sound),
@@ -193,22 +204,9 @@ fun SoundRow(
             )
         }
 
-        @Suppress("MagicNumber")
-        val size by animateDpAsState(
-            targetValue = if (isLiked) 26.dp else 24.dp,
-            animationSpec = keyframes {
-                durationMillis = 250
-                24.dp at 0 with LinearOutSlowInEasing
-                26.dp at 15 with FastOutLinearInEasing
-                30.dp at 75
-                28.dp at 150
-            }
-        )
-
         IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             Icon(
                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                modifier = Modifier.size(size),
                 contentDescription = null,
             )
         }
@@ -255,17 +253,21 @@ private fun SoundListSnackbar(
 private fun SoundListTabBarSection(
     viewState: SoundListViewState,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
-    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit
+    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit
 ) {
     Column {
-        SoundListTabBar(
-            categories = viewState.categories,
-            selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
-            onCategorySelected = onCategorySelected,
-            modifier = Modifier.padding(
-                WindowInsets.statusBars.asPaddingValues()
+        Row {
+            DisplayOnlyFavouritesButton(viewState, onDisplayOnlyFavouritesButtonPressed)
+            SoundListTabBar(
+                categories = viewState.categories,
+                selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+                onCategorySelected = onCategorySelected,
+                modifier = Modifier.padding(
+                    WindowInsets.statusBars.asPaddingValues()
+                )
             )
-        )
+        }
         AnimatedVisibility(visible = viewState.subcategories != null) {
             viewState.subcategories?.let {
                 SoundListTabBar(
@@ -275,6 +277,58 @@ private fun SoundListTabBarSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun DisplayOnlyFavouritesButton(
+    viewState: SoundListViewState,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit
+) {
+    @Suppress("MagicNumber")
+    val size by animateDpAsState(
+        targetValue = if (viewState.displayOnlyFavourites) 26.dp else 24.dp,
+        animationSpec = keyframes {
+            durationMillis = 250
+            24.dp at 0 with LinearOutSlowInEasing
+            26.dp at 15 with FastOutLinearInEasing
+            30.dp at 75
+            28.dp at 150
+        }
+    )
+
+    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant
+
+    IconToggleButton(
+        modifier = Modifier
+            .padding(
+                WindowInsets.statusBars.asPaddingValues()
+            )
+            .drawBehind {
+                val canvasHeight = this.size.height
+                val canvasWidth = this.size.width
+                drawLine(
+                    SolidColor(outlineVariantColor),
+                    Offset(0f, canvasHeight),
+                    Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 3.dp.value // a Jetpack bug occurs here.
+                )
+
+                drawLine(
+                    SolidColor(outlineVariantColor),
+                    Offset(canvasWidth, 0f),
+                    Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 5.dp.value
+                )
+            },
+        checked = viewState.displayOnlyFavourites,
+        onCheckedChange = { onDisplayOnlyFavouritesButtonPressed() },
+    ) {
+        Icon(
+            imageVector = if (viewState.displayOnlyFavourites) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            modifier = Modifier.size(size),
+            contentDescription = null,
+        )
     }
 }
 

@@ -169,6 +169,12 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
+    fun onDisplayOnlyFavouritesButtonPressed() {
+        _viewState.value = viewState.value.copy(
+            displayOnlyFavourites = !viewState.value.displayOnlyFavourites
+        )
+    }
+
     fun onBackButtonPressed(context: Context) {
         viewModelScope.launch {
             val goodbyeSound = ResourceSound(
