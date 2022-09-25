@@ -5,6 +5,9 @@ import android.content.res.AssetManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import uvis.irin.grape.core.capitalize
 import uvis.irin.grape.core.data.Result
+import uvis.irin.grape.core.data.local.favouritesounds.FavouriteSoundDao
+import uvis.irin.grape.core.data.local.favouritesounds.toPersistableFavouriteSound
+import uvis.irin.grape.core.data.local.favouritesounds.toResourceSound
 import uvis.irin.grape.core.trimFileExtension
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
@@ -13,6 +16,7 @@ import javax.inject.Inject
 
 class ProdSoundListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val favouriteSoundDao: FavouriteSoundDao
 ) : SoundListRepository {
 
     companion object {
@@ -58,6 +62,19 @@ class ProdSoundListRepository @Inject constructor(
                 )
             }
             ?: Result.Error(error = IOException("An error has occurred while reading the assets"))
+    }
+
+    override suspend fun fetchAllFavouriteSounds(): Result<List<ResourceSound>> =
+        favouriteSoundDao.getAll().map { it.toResourceSound() }.let {
+            Result.Success(data = it)
+        }
+
+    override suspend fun insertFavouriteSound(favouriteSound: ResourceSound) {
+        favouriteSoundDao.insertFavouriteSound(favouriteSound.toPersistableFavouriteSound())
+    }
+
+    override suspend fun deleteFavouriteSound(favouriteSound: ResourceSound) {
+        favouriteSoundDao.deleteFavouriteSound(favouriteSound.toPersistableFavouriteSound())
     }
 
     private fun findSubcategoriesForCategory(

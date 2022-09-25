@@ -1,7 +1,7 @@
 package uvis.irin.grape.soundlist.ui
 
+import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
-import uvis.irin.grape.soundlist.domain.model.Sound
 
 data class SoundListViewState(
     val showLoading: Boolean = true,
@@ -9,6 +9,8 @@ data class SoundListViewState(
     val selectedCategory: ResourceSoundCategory? = null,
     val subcategories: List<ResourceSoundCategory>? = null,
     val selectedSubcategory: ResourceSoundCategory? = null,
-    val sounds: List<Sound> = emptyList(),
+    val sounds: List<ResourceSound> = emptyList(),
+    val favouriteSounds: List<ResourceSound> = emptyList(),
+    val displayOnlyFavourites: Boolean = false,
     val errorMessage: String? = null,
 )

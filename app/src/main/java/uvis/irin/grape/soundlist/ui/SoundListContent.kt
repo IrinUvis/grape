@@ -51,27 +51,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
-import uvis.irin.grape.soundlist.domain.model.Sound
 
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -94,6 +96,8 @@ fun SoundListContent(
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
                     onCategorySelected = onCategorySelected,
                     onSubcategorySelected = onSubcategorySelected,
+                    onFavouriteButtonPressed = onFavouriteButtonPressed,
+                    onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
@@ -106,10 +110,12 @@ fun SoundListContent(
 @Composable
 fun LoadedSoundListContent(
     viewState: SoundListViewState,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -129,25 +135,12 @@ fun LoadedSoundListContent(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            Column {
-                SoundSectionTabBar(
-                    categories = viewState.categories,
-                    selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
-                    onCategorySelected = onCategorySelected,
-                    modifier = Modifier.padding(
-                        WindowInsets.statusBars.asPaddingValues()
-                    )
-                )
-                AnimatedVisibility(visible = viewState.subcategories != null) {
-                    viewState.subcategories?.let {
-                        SoundSectionTabBar(
-                            categories = it,
-                            selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
-                            onCategorySelected = onSubcategorySelected
-                        )
-                    }
-                }
-            }
+            SoundListTabBarSection(
+                viewState = viewState,
+                onCategorySelected = onCategorySelected,
+                onSubcategorySelected = onSubcategorySelected,
+                onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+            )
         },
         bottomBar = {
             Spacer(
@@ -162,11 +155,16 @@ fun LoadedSoundListContent(
                 .padding(paddingValues)
                 .padding(10.dp)
         ) {
-            items(viewState.sounds) { sound ->
+            val sounds = if (viewState.displayOnlyFavourites) viewState.sounds.filter {
+                viewState.favouriteSounds.contains(it)
+            } else viewState.sounds
+            items(sounds) { sound ->
                 SoundRow(
                     sound = sound,
+                    isLiked = viewState.favouriteSounds.contains(sound),
                     onSoundPressed = onSoundPressed,
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
+                    onFavouriteButtonPressed = onFavouriteButtonPressed,
                 )
 
                 Divider()
@@ -177,13 +175,13 @@ fun LoadedSoundListContent(
 
 @Composable
 fun SoundRow(
-    sound: Sound,
-    onSoundPressed: (sound: Sound, context: Context) -> Unit,
-    onSoundShareButtonPressed: (sound: Sound, context: Context) -> Unit
+    sound: ResourceSound,
+    isLiked: Boolean,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit
 ) {
     val context = LocalContext.current
-
-    var isLiked by rememberSaveable { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -205,22 +203,9 @@ fun SoundRow(
             )
         }
 
-        @Suppress("MagicNumber")
-        val size by animateDpAsState(
-            targetValue = if (isLiked) 26.dp else 24.dp,
-            animationSpec = keyframes {
-                durationMillis = 250
-                24.dp at 0 with LinearOutSlowInEasing
-                26.dp at 15 with FastOutLinearInEasing
-                30.dp at 75
-                28.dp at 150
-            }
-        )
-
-        IconToggleButton(checked = isLiked, onCheckedChange = { isLiked = !isLiked }) {
+        IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             Icon(
                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                modifier = Modifier.size(size),
                 contentDescription = null,
             )
         }
@@ -264,7 +249,90 @@ private fun SoundListSnackbar(
 }
 
 @Composable
-private fun SoundSectionTabBar(
+private fun SoundListTabBarSection(
+    viewState: SoundListViewState,
+    onCategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit
+) {
+    Column {
+        Row {
+            DisplayOnlyFavouritesButton(viewState, onDisplayOnlyFavouritesButtonPressed)
+            SoundListTabBar(
+                categories = viewState.categories,
+                selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+                onCategorySelected = onCategorySelected,
+                modifier = Modifier.padding(
+                    WindowInsets.statusBars.asPaddingValues()
+                )
+            )
+        }
+        AnimatedVisibility(visible = viewState.subcategories != null) {
+            viewState.subcategories?.let {
+                SoundListTabBar(
+                    categories = it,
+                    selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
+                    onCategorySelected = onSubcategorySelected
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DisplayOnlyFavouritesButton(
+    viewState: SoundListViewState,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit
+) {
+    @Suppress("MagicNumber")
+    val size by animateDpAsState(
+        targetValue = if (viewState.displayOnlyFavourites) 26.dp else 24.dp,
+        animationSpec = keyframes {
+            durationMillis = 250
+            24.dp at 0 with LinearOutSlowInEasing
+            26.dp at 15 with FastOutLinearInEasing
+            30.dp at 75
+            28.dp at 150
+        }
+    )
+
+    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant
+
+    IconToggleButton(
+        modifier = Modifier
+            .padding(
+                WindowInsets.statusBars.asPaddingValues()
+            )
+            .drawBehind {
+                val canvasHeight = this.size.height
+                val canvasWidth = this.size.width
+                drawLine(
+                    SolidColor(outlineVariantColor),
+                    Offset(0f, canvasHeight),
+                    Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 3.dp.value // a Jetpack bug occurs here.
+                )
+
+                drawLine(
+                    SolidColor(outlineVariantColor),
+                    Offset(canvasWidth, 0f),
+                    Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 5.dp.value
+                )
+            },
+        checked = viewState.displayOnlyFavourites,
+        onCheckedChange = { onDisplayOnlyFavouritesButtonPressed() },
+    ) {
+        Icon(
+            imageVector = if (viewState.displayOnlyFavourites) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            modifier = Modifier.size(size),
+            contentDescription = null,
+        )
+    }
+}
+
+@Composable
+private fun SoundListTabBar(
     categories: List<ResourceSoundCategory>,
     selectedTabIndex: Int,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,

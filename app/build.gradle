@@ -19,6 +19,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -76,8 +82,12 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:$rootProject.ext.versions.accompanist"
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     implementation "androidx.hilt:hilt-navigation-compose:$rootProject.ext.versions.hiltNavigationCompose"
+    implementation "androidx.room:room-runtime:$rootProject.ext.versions.room"
+    implementation "androidx.room:room-ktx:$rootProject.ext.versions.room"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+    kapt "androidx.room:room-compiler:$rootProject.ext.versions.room"
     testImplementation "junit:junit:$rootProject.ext.versions.junit"
+    annotationProcessor "androidx.room:room-compiler:$rootProject.ext.versions.room"
     androidTestImplementation "androidx.test.ext:junit:$rootProject.ext.versions.androidxTest"
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.ext.versions.espresso"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$rootProject.ext.versions.compose"

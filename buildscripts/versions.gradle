@@ -25,6 +25,8 @@ ext {
             // https://github.com/google/accompanist/releases
             accompanist          : "0.25.1",
             // https://developer.android.com/jetpack/androidx/releases/hilt
-            hiltNavigationCompose: "1.0.0"
+            hiltNavigationCompose: "1.0.0",
+            // https://developer.android.com/jetpack/androidx/releases/room
+            room                 : "2.4.3"
     ]
 }

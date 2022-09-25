@@ -19,7 +19,7 @@ import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
-import uvis.irin.grape.soundlist.domain.model.Sound
+import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
 import uvis.irin.grape.soundlist.domain.usecase.GetAllSoundsByCategoryUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetSoundCategoriesUseCase
 import java.io.File
@@ -33,7 +33,8 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 class SoundListViewModel @Inject constructor(
     private val getSoundCategoriesUseCase: GetSoundCategoriesUseCase,
-    private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase
+    private val getAllSoundsByCategoryUseCase: GetAllSoundsByCategoryUseCase,
+    private val soundListRepository: ProdSoundListRepository,
 ) : ViewModel() {
     private val mediaPlayer: MediaPlayer = MediaPlayer()
 
@@ -45,7 +46,11 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             val getSoundCategoriesResult = getSoundCategoriesUseCase()
 
-            _viewState.value = getViewStateForAllSoundCategories(getSoundCategoriesResult)
+            _viewState.value = getViewStateForAllSoundCategoriesResult(getSoundCategoriesResult)
+
+            val favouriteSoundsResult = soundListRepository.fetchAllFavouriteSounds()
+
+            _viewState.value = getViewStateForAllFavouriteSoundsResult(favouriteSoundsResult)
 
             val initialCategory =
                 if (_viewState.value.selectedSubcategory != null) _viewState.value.selectedSubcategory
@@ -65,53 +70,51 @@ class SoundListViewModel @Inject constructor(
         mediaPlayer.release()
     }
 
-    fun onSoundPressed(sound: Sound, context: Context) {
+    fun onSoundPressed(sound: ResourceSound, context: Context) {
         playSound(sound, context)
     }
 
-    fun onSoundShareButtonPressed(sound: Sound, context: Context) {
-        if (sound is ResourceSound) {
-            try {
-                val inStream =
-                    context.assets.open(sound.completePath)
-                val soundTempFile = File.createTempFile("sound", ".mp3")
-                copyFile(inStream, FileOutputStream(soundTempFile))
+    fun onSoundShareButtonPressed(sound: ResourceSound, context: Context) {
+        try {
+            val inStream =
+                context.assets.open(sound.completePath)
+            val soundTempFile = File.createTempFile("sound", ".mp3")
+            copyFile(inStream, FileOutputStream(soundTempFile))
 
-                val authority = BuildConfig.APPLICATION_ID + ".provider"
-                val uri =
-                    FileProvider.getUriForFile(context.applicationContext, authority, soundTempFile)
+            val authority = BuildConfig.APPLICATION_ID + ".provider"
+            val uri =
+                FileProvider.getUriForFile(context.applicationContext, authority, soundTempFile)
 
-                val shareIntent = Intent(Intent.ACTION_SEND)
-                shareIntent.type = "audio/mp3"
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "audio/mp3"
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
 
-                val chooser = Intent.createChooser(shareIntent, "Share sound")
+            val chooser = Intent.createChooser(shareIntent, "Share sound")
 
-                val resInfoList: List<ResolveInfo> = context.packageManager
-                    .queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+            val resInfoList: List<ResolveInfo> = context.packageManager
+                .queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
 
-                for (resolveInfo in resInfoList) {
-                    val packageName = resolveInfo.activityInfo.packageName
-                    context.grantUriPermission(
-                        packageName,
-                        uri,
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                }
-
-                context.startActivity(chooser)
-            } catch (ex: IOException) {
-                Log.e(
-                    "Sound sharing",
-                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared",
-                    ex
+            for (resolveInfo in resInfoList) {
+                val packageName = resolveInfo.activityInfo.packageName
+                context.grantUriPermission(
+                    packageName,
+                    uri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-                _viewState.update {
-                    it.copy(
-                        errorMessage = "Cannot share the file"
-                    )
-                }
+            }
+
+            context.startActivity(chooser)
+        } catch (ex: IOException) {
+            Log.e(
+                "Sound sharing",
+                "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared",
+                ex
+            )
+            _viewState.update {
+                it.copy(
+                    errorMessage = "Cannot share the file"
+                )
             }
         }
     }
@@ -154,6 +157,24 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
+    fun onFavouriteButtonPressed(sound: ResourceSound) {
+        viewModelScope.launch {
+            if (viewState.value.favouriteSounds.contains(sound)) {
+                soundListRepository.deleteFavouriteSound(sound)
+            } else {
+                soundListRepository.insertFavouriteSound(sound)
+            }
+            val updatedFavouriteSoundsResult = soundListRepository.fetchAllFavouriteSounds()
+            _viewState.value = getViewStateForAllFavouriteSoundsResult(updatedFavouriteSoundsResult)
+        }
+    }
+
+    fun onDisplayOnlyFavouritesButtonPressed() {
+        _viewState.value = viewState.value.copy(
+            displayOnlyFavourites = !viewState.value.displayOnlyFavourites
+        )
+    }
+
     fun onBackButtonPressed(context: Context) {
         viewModelScope.launch {
             val goodbyeSound = ResourceSound(
@@ -192,46 +213,44 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun playSound(
-        sound: Sound,
+        sound: ResourceSound,
         context: Context,
         onCompletionListener: () -> Unit = { }
     ) {
-        if (sound is ResourceSound) {
-            mediaPlayer.reset()
-            try {
-                val descriptor =
-                    context.assets.openFd(sound.completePath)
+        mediaPlayer.reset()
+        try {
+            val descriptor =
+                context.assets.openFd(sound.completePath)
 
-                mediaPlayer.setDataSource(
-                    descriptor.fileDescriptor,
-                    descriptor.startOffset,
-                    descriptor.length
-                )
-                descriptor.close()
+            mediaPlayer.setDataSource(
+                descriptor.fileDescriptor,
+                descriptor.startOffset,
+                descriptor.length
+            )
+            descriptor.close()
 
-                mediaPlayer.prepare()
-                mediaPlayer.setOnCompletionListener {
-                    onCompletionListener()
-                }
-                mediaPlayer.setVolume(1f, 1f)
-                mediaPlayer.isLooping = false
-                mediaPlayer.start()
-            } catch (ex: IOException) {
-                Log.e(
-                    "Sound playing",
-                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be played",
-                    ex
+            mediaPlayer.prepare()
+            mediaPlayer.setOnCompletionListener {
+                onCompletionListener()
+            }
+            mediaPlayer.setVolume(1f, 1f)
+            mediaPlayer.isLooping = false
+            mediaPlayer.start()
+        } catch (ex: IOException) {
+            Log.e(
+                "Sound playing",
+                "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be played",
+                ex
+            )
+            _viewState.update {
+                it.copy(
+                    errorMessage = "Cannot play sound"
                 )
-                _viewState.update {
-                    it.copy(
-                        errorMessage = "Cannot play sound"
-                    )
-                }
             }
         }
     }
 
-    private fun getViewStateForAllSoundCategories(
+    private fun getViewStateForAllSoundCategoriesResult(
         getSoundCategoriesResult: Result<List<ResourceSoundCategory>>
     ): SoundListViewState {
         return when (getSoundCategoriesResult) {
@@ -265,6 +284,23 @@ class SoundListViewModel @Inject constructor(
                 _viewState.value.copy(
                     showLoading = false,
                     sounds = emptyList()
+                )
+            }
+        }
+    }
+
+    private fun getViewStateForAllFavouriteSoundsResult(
+        fetchAllFavouriteSoundsResult: Result<List<ResourceSound>>
+    ): SoundListViewState {
+        return when (fetchAllFavouriteSoundsResult) {
+            is Result.Success -> {
+                _viewState.value.copy(
+                    favouriteSounds = fetchAllFavouriteSoundsResult.data
+                )
+            }
+            is Result.Error -> {
+                _viewState.value.copy(
+                    favouriteSounds = emptyList()
                 )
             }
         }

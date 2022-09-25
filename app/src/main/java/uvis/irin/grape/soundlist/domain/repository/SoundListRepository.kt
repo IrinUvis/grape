@@ -9,4 +9,10 @@ interface SoundListRepository {
     suspend fun fetchAllCategories(): Result<List<ResourceSoundCategory>>
 
     suspend fun fetchSoundsByCategory(category: ResourceSoundCategory): Result<List<ResourceSound>>
+
+    suspend fun fetchAllFavouriteSounds(): Result<List<ResourceSound>>
+
+    suspend fun insertFavouriteSound(favouriteSound: ResourceSound)
+
+    suspend fun deleteFavouriteSound(favouriteSound: ResourceSound)
 }
