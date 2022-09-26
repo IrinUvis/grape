@@ -28,7 +28,10 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
@@ -63,6 +66,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -168,7 +173,11 @@ fun LoadedSoundListContent(
                 viewState.favouriteSounds.contains(it)
             } else viewState.sounds
 
-            items(sounds.filter { it.name.lowercase().contains(viewState.searchQuery.lowercase()) }) { sound ->
+            items(
+                sounds.filter {
+                    it.name.lowercase().contains(viewState.searchQuery.lowercase())
+                }
+            ) { sound ->
                 SoundRow(
                     sound = sound,
                     isLiked = viewState.favouriteSounds.contains(sound),
@@ -209,13 +218,13 @@ fun SoundRow(
                 text = sound.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
         }
 
         IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             Icon(
-                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = null,
             )
         }
@@ -223,7 +232,7 @@ fun SoundRow(
         IconButton(onClick = { onSoundShareButtonPressed(sound, context) }) {
             Icon(
                 imageVector = Icons.Default.Share,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     }
@@ -373,6 +382,8 @@ private fun SoundSearchBar(
     onSoundSearchBarTextChanged: (String) -> Unit,
     modifier: Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+
     TextField(
         value = searchQuery,
         onValueChange = onSoundSearchBarTextChanged,
@@ -380,6 +391,17 @@ private fun SoundSearchBar(
         leadingIcon = {
             Icon(imageVector = Icons.Default.Search, contentDescription = null)
         },
+        trailingIcon = {
+            IconButton(onClick = { onSoundSearchBarTextChanged("") }) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                focusManager.clearFocus()
+            }
+        ),
         singleLine = true,
         modifier = modifier,
         colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.surface)
