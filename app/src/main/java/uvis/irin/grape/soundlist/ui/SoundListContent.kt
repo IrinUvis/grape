@@ -11,11 +11,11 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -151,12 +150,16 @@ fun LoadedSoundListContent(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             SoundListTabBarSection(
-                viewState = viewState,
+                categories = viewState.categories,
+                selectedCategory = viewState.selectedCategory,
+                subcategories = viewState.subcategories,
+                selectedSubcategory = viewState.selectedSubcategory,
+                displayOnlyFavourites = viewState.displayOnlyFavourites,
+                searchQuery = viewState.searchQuery,
                 onCategorySelected = onCategorySelected,
                 onSubcategorySelected = onSubcategorySelected,
                 onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
-                onSoundSearchBarTextChanged = onSoundSearchBarTextChanged
-
+                onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
             )
         },
         bottomBar = {
@@ -167,34 +170,57 @@ fun LoadedSoundListContent(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(10.dp)
-        ) {
-            val sounds = if (viewState.displayOnlyFavourites) viewState.sounds.filter {
-                viewState.favouriteSounds.contains(it)
-            } else viewState.sounds
+        SoundSection(
+            paddingValues = paddingValues,
+            sounds = viewState.sounds,
+            favouriteSounds = viewState.favouriteSounds,
+            displayOnlyFavourites = viewState.displayOnlyFavourites,
+            searchQuery = viewState.searchQuery,
+            onSoundPressed = onSoundPressed,
+            onSoundShareButtonPressed = onSoundShareButtonPressed,
+            onFavouriteButtonPressed = onFavouriteButtonPressed,
+        )
+    }
+}
 
-            items(
-                items = sounds.filter {
-                    it.name.lowercase().contains(viewState.searchQuery.lowercase())
-                },
-                key = { item -> item.completePath },
-            ) { sound ->
-                Column(
-                    modifier = Modifier.animateItemPlacement()
-                ) {
-                    SoundRow(
-                        sound = sound,
-                        isLiked = viewState.favouriteSounds.contains(sound),
-                        onSoundPressed = onSoundPressed,
-                        onSoundShareButtonPressed = onSoundShareButtonPressed,
-                        onFavouriteButtonPressed = onFavouriteButtonPressed,
-                    )
+@Composable
+fun SoundSection(
+    paddingValues: PaddingValues,
+    sounds: List<ResourceSound>,
+    favouriteSounds: List<ResourceSound>,
+    displayOnlyFavourites: Boolean,
+    searchQuery: String,
+    onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(10.dp)
+    ) {
+        val filteredSounds = if (displayOnlyFavourites) sounds.filter {
+            favouriteSounds.contains(it)
+        } else sounds
 
-                    Divider()
-                }
+        items(
+            items = filteredSounds.filter {
+                it.name.lowercase().contains(searchQuery.lowercase())
+            },
+            key = { item -> item.completePath },
+        ) { sound ->
+            Column(
+                modifier = Modifier.animateItemPlacement()
+            ) {
+                SoundRow(
+                    sound = sound,
+                    isLiked = favouriteSounds.contains(sound),
+                    onSoundPressed = onSoundPressed,
+                    onSoundShareButtonPressed = onSoundShareButtonPressed,
+                    onFavouriteButtonPressed = onFavouriteButtonPressed,
+                )
+
+                Divider()
             }
         }
     }
@@ -248,7 +274,7 @@ fun SoundRow(
 }
 
 @Composable
-private fun SoundListSnackbar(
+fun SoundListSnackbar(
     errorMessage: String?,
     snackbarHostState: SnackbarHostState,
     onErrorSnackbarDismissed: () -> Unit
@@ -277,54 +303,35 @@ private fun SoundListSnackbar(
 }
 
 @Composable
-private fun SoundListTabBarSection(
-    viewState: SoundListViewState,
+fun SoundListTabBarSection(
+    categories: List<ResourceSoundCategory>,
+    selectedCategory: ResourceSoundCategory?,
+    subcategories: List<ResourceSoundCategory>?,
+    selectedSubcategory: ResourceSoundCategory?,
+    displayOnlyFavourites: Boolean,
+    searchQuery: String,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     onSoundSearchBarTextChanged: (String) -> Unit,
 ) {
     Column {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            val bottomBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-
-            DisplayOnlyFavouritesButton(
-                displayOnlyFavourites = viewState.displayOnlyFavourites,
-                onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
-                bottomBorderColor = bottomBorderColor
-            )
-            SoundSearchBar(
-                searchQuery = viewState.searchQuery,
-                onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
-                modifier = Modifier
-                    .padding(
-                        WindowInsets.statusBars.asPaddingValues()
-                    )
-                    .weight(1f)
-                    .drawBehind {
-                        val canvasHeight = this.size.height
-                        val canvasWidth = this.size.width
-                        drawLine(
-                            SolidColor(bottomBorderColor),
-                            Offset(0f, canvasHeight),
-                            Offset(canvasWidth / 2, canvasHeight),
-                            strokeWidth = 5.dp.value
-                        )
-                    }
-            )
-        }
+        FavouritesAndSearchRow(
+            displayOnlyFavourites = displayOnlyFavourites,
+            searchQuery = searchQuery,
+            onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+            onSoundSearchBarTextChanged = onSoundSearchBarTextChanged
+        )
         SoundListTabBar(
-            categories = viewState.categories,
-            selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+            categories = categories,
+            selectedTabIndex = categories.indexOf(selectedCategory),
             onCategorySelected = onCategorySelected,
         )
-        AnimatedVisibility(visible = viewState.subcategories != null) {
-            viewState.subcategories?.let {
+        AnimatedVisibility(visible = subcategories != null) {
+            subcategories?.let {
                 SoundListTabBar(
                     categories = it,
-                    selectedTabIndex = viewState.subcategories.indexOf(viewState.selectedSubcategory),
+                    selectedTabIndex = subcategories.indexOf(selectedSubcategory),
                     onCategorySelected = onSubcategorySelected
                 )
             }
@@ -333,7 +340,46 @@ private fun SoundListTabBarSection(
 }
 
 @Composable
-private fun DisplayOnlyFavouritesButton(
+fun FavouritesAndSearchRow(
+    displayOnlyFavourites: Boolean,
+    searchQuery: String,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
+    onSoundSearchBarTextChanged: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        val bottomBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+        DisplayOnlyFavouritesButton(
+            displayOnlyFavourites = displayOnlyFavourites,
+            onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+            bottomBorderColor = bottomBorderColor
+        )
+        SoundSearchBar(
+            searchQuery = searchQuery,
+            onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
+            modifier = Modifier
+                .padding(
+                    WindowInsets.statusBars.asPaddingValues()
+                )
+                .weight(1f)
+                .drawBehind {
+                    val canvasHeight = this.size.height
+                    val canvasWidth = this.size.width
+                    drawLine(
+                        SolidColor(bottomBorderColor),
+                        Offset(0f, canvasHeight),
+                        Offset(canvasWidth / 2, canvasHeight),
+                        strokeWidth = 5.dp.value
+                    )
+                }
+        )
+    }
+}
+
+@Composable
+fun DisplayOnlyFavouritesButton(
     displayOnlyFavourites: Boolean,
     onDisplayOnlyFavouritesButtonPressed: () -> Unit,
     bottomBorderColor: Color
@@ -386,7 +432,7 @@ private fun DisplayOnlyFavouritesButton(
 }
 
 @Composable
-private fun SoundSearchBar(
+fun SoundSearchBar(
     searchQuery: String,
     onSoundSearchBarTextChanged: (String) -> Unit,
     modifier: Modifier
@@ -418,7 +464,7 @@ private fun SoundSearchBar(
 }
 
 @Composable
-private fun SoundListTabBar(
+fun SoundListTabBar(
     categories: List<ResourceSoundCategory>,
     selectedTabIndex: Int,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
