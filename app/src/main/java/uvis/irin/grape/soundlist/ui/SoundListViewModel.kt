@@ -175,6 +175,12 @@ class SoundListViewModel @Inject constructor(
         )
     }
 
+    fun onSoundSearchBarTextChanged(newText: String) {
+        _viewState.value = viewState.value.copy(
+            searchQuery = newText
+        )
+    }
+
     fun onBackButtonPressed(context: Context) {
         viewModelScope.launch {
             val goodbyeSound = ResourceSound(

@@ -12,5 +12,6 @@ data class SoundListViewState(
     val sounds: List<ResourceSound> = emptyList(),
     val favouriteSounds: List<ResourceSound> = emptyList(),
     val displayOnlyFavourites: Boolean = false,
+    val searchQuery: String = "",
     val errorMessage: String? = null,
 )

@@ -28,9 +28,13 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -48,6 +52,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,8 +63,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -74,6 +83,7 @@ fun SoundListContent(
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
     onDisplayOnlyFavouritesButtonPressed: () -> Unit,
+    onSoundSearchBarTextChanged: (String) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -98,6 +108,7 @@ fun SoundListContent(
                     onSubcategorySelected = onSubcategorySelected,
                     onFavouriteButtonPressed = onFavouriteButtonPressed,
                     onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+                    onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
                     onBackButtonPressed = onBackButtonPressed,
                     onErrorSnackbarDismissed = onErrorSnackbarDismissed
                 )
@@ -116,6 +127,7 @@ fun LoadedSoundListContent(
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
     onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
     onDisplayOnlyFavouritesButtonPressed: () -> Unit,
+    onSoundSearchBarTextChanged: (String) -> Unit,
     onBackButtonPressed: (context: Context) -> Unit,
     onErrorSnackbarDismissed: () -> Unit
 ) {
@@ -140,6 +152,8 @@ fun LoadedSoundListContent(
                 onCategorySelected = onCategorySelected,
                 onSubcategorySelected = onSubcategorySelected,
                 onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+                onSoundSearchBarTextChanged = onSoundSearchBarTextChanged
+
             )
         },
         bottomBar = {
@@ -158,7 +172,12 @@ fun LoadedSoundListContent(
             val sounds = if (viewState.displayOnlyFavourites) viewState.sounds.filter {
                 viewState.favouriteSounds.contains(it)
             } else viewState.sounds
-            items(sounds) { sound ->
+
+            items(
+                sounds.filter {
+                    it.name.lowercase().contains(viewState.searchQuery.lowercase())
+                }
+            ) { sound ->
                 SoundRow(
                     sound = sound,
                     isLiked = viewState.favouriteSounds.contains(sound),
@@ -199,13 +218,13 @@ fun SoundRow(
                 text = sound.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
         }
 
         IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             Icon(
-                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = null,
             )
         }
@@ -213,7 +232,7 @@ fun SoundRow(
         IconButton(onClick = { onSoundShareButtonPressed(sound, context) }) {
             Icon(
                 imageVector = Icons.Default.Share,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     }
@@ -253,20 +272,45 @@ private fun SoundListTabBarSection(
     viewState: SoundListViewState,
     onCategorySelected: (category: ResourceSoundCategory) -> Unit,
     onSubcategorySelected: (category: ResourceSoundCategory) -> Unit,
-    onDisplayOnlyFavouritesButtonPressed: () -> Unit
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
+    onSoundSearchBarTextChanged: (String) -> Unit,
 ) {
     Column {
-        Row {
-            DisplayOnlyFavouritesButton(viewState, onDisplayOnlyFavouritesButtonPressed)
-            SoundListTabBar(
-                categories = viewState.categories,
-                selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
-                onCategorySelected = onCategorySelected,
-                modifier = Modifier.padding(
-                    WindowInsets.statusBars.asPaddingValues()
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val bottomBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+            DisplayOnlyFavouritesButton(
+                displayOnlyFavourites = viewState.displayOnlyFavourites,
+                onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+                bottomBorderColor = bottomBorderColor
+            )
+            SoundSearchBar(
+                searchQuery = viewState.searchQuery,
+                onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
+                modifier = Modifier
+                    .padding(
+                        WindowInsets.statusBars.asPaddingValues()
+                    )
+                    .weight(1f)
+                    .drawBehind {
+                        val canvasHeight = this.size.height
+                        val canvasWidth = this.size.width
+                        drawLine(
+                            SolidColor(bottomBorderColor),
+                            Offset(0f, canvasHeight),
+                            Offset(canvasWidth / 2, canvasHeight),
+                            strokeWidth = 5.dp.value
+                        )
+                    }
             )
         }
+        SoundListTabBar(
+            categories = viewState.categories,
+            selectedTabIndex = viewState.categories.indexOf(viewState.selectedCategory),
+            onCategorySelected = onCategorySelected,
+        )
         AnimatedVisibility(visible = viewState.subcategories != null) {
             viewState.subcategories?.let {
                 SoundListTabBar(
@@ -281,12 +325,13 @@ private fun SoundListTabBarSection(
 
 @Composable
 private fun DisplayOnlyFavouritesButton(
-    viewState: SoundListViewState,
-    onDisplayOnlyFavouritesButtonPressed: () -> Unit
+    displayOnlyFavourites: Boolean,
+    onDisplayOnlyFavouritesButtonPressed: () -> Unit,
+    bottomBorderColor: Color
 ) {
     @Suppress("MagicNumber")
     val size by animateDpAsState(
-        targetValue = if (viewState.displayOnlyFavourites) 26.dp else 24.dp,
+        targetValue = if (displayOnlyFavourites) 26.dp else 24.dp,
         animationSpec = keyframes {
             durationMillis = 250
             24.dp at 0 with LinearOutSlowInEasing
@@ -296,39 +341,71 @@ private fun DisplayOnlyFavouritesButton(
         }
     )
 
-    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant
-
     IconToggleButton(
         modifier = Modifier
             .padding(
                 WindowInsets.statusBars.asPaddingValues()
             )
+            .size(56.dp)
             .drawBehind {
                 val canvasHeight = this.size.height
                 val canvasWidth = this.size.width
                 drawLine(
-                    SolidColor(outlineVariantColor),
+                    SolidColor(bottomBorderColor),
                     Offset(0f, canvasHeight),
                     Offset(canvasWidth, canvasHeight),
-                    strokeWidth = 3.dp.value // a Jetpack bug occurs here.
+                    strokeWidth = 6.dp.value
                 )
 
+                @Suppress("MagicNumber")
                 drawLine(
-                    SolidColor(outlineVariantColor),
-                    Offset(canvasWidth, 0f),
+                    SolidColor(bottomBorderColor),
+                    Offset(canvasWidth, canvasHeight / 10),
                     Offset(canvasWidth, canvasHeight),
-                    strokeWidth = 5.dp.value
+                    strokeWidth = 6.dp.value
                 )
             },
-        checked = viewState.displayOnlyFavourites,
+        checked = displayOnlyFavourites,
         onCheckedChange = { onDisplayOnlyFavouritesButtonPressed() },
     ) {
         Icon(
-            imageVector = if (viewState.displayOnlyFavourites) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            imageVector = if (displayOnlyFavourites) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
             modifier = Modifier.size(size),
             contentDescription = null,
         )
     }
+}
+
+@Composable
+private fun SoundSearchBar(
+    searchQuery: String,
+    onSoundSearchBarTextChanged: (String) -> Unit,
+    modifier: Modifier
+) {
+    val focusManager = LocalFocusManager.current
+
+    TextField(
+        value = searchQuery,
+        onValueChange = onSoundSearchBarTextChanged,
+        placeholder = { Text(text = "Search...") },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = null)
+        },
+        trailingIcon = {
+            IconButton(onClick = { onSoundSearchBarTextChanged("") }) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                focusManager.clearFocus()
+            }
+        ),
+        singleLine = true,
+        modifier = modifier,
+        colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.surface)
+    )
 }
 
 @Composable
