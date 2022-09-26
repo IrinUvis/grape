@@ -1,5 +1,5 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class
 )
 
 package uvis.irin.grape.soundlist.ui
@@ -11,6 +11,8 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,7 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -174,19 +177,24 @@ fun LoadedSoundListContent(
             } else viewState.sounds
 
             items(
-                sounds.filter {
+                items = sounds.filter {
                     it.name.lowercase().contains(viewState.searchQuery.lowercase())
-                }
+                },
+                key = { item -> item.completePath },
             ) { sound ->
-                SoundRow(
-                    sound = sound,
-                    isLiked = viewState.favouriteSounds.contains(sound),
-                    onSoundPressed = onSoundPressed,
-                    onSoundShareButtonPressed = onSoundShareButtonPressed,
-                    onFavouriteButtonPressed = onFavouriteButtonPressed,
-                )
+                Column(
+                    modifier = Modifier.animateItemPlacement()
+                ) {
+                    SoundRow(
+                        sound = sound,
+                        isLiked = viewState.favouriteSounds.contains(sound),
+                        onSoundPressed = onSoundPressed,
+                        onSoundShareButtonPressed = onSoundShareButtonPressed,
+                        onFavouriteButtonPressed = onFavouriteButtonPressed,
+                    )
 
-                Divider()
+                    Divider()
+                }
             }
         }
     }
@@ -198,12 +206,13 @@ fun SoundRow(
     isLiked: Boolean,
     onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
-    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit
+    onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End,

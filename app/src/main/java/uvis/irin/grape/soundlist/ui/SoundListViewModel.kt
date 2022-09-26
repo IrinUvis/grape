@@ -188,7 +188,7 @@ class SoundListViewModel @Inject constructor(
                 category = ResourceSoundCategory(
                     name = "Stonoga",
                     subcategories = null,
-                    assetsPath = "sounds/4_qrwio vadis"
+                    assetsPath = "sounds/6_qrwio vadis"
                 ),
                 relativeAssetPath = "Do widzenia.mp3"
             )
