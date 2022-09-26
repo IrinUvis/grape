@@ -214,7 +214,7 @@ fun SoundSection(
             ) {
                 SoundRow(
                     sound = sound,
-                    isLiked = favouriteSounds.contains(sound),
+                    isFavourite = favouriteSounds.contains(sound),
                     onSoundPressed = onSoundPressed,
                     onSoundShareButtonPressed = onSoundShareButtonPressed,
                     onFavouriteButtonPressed = onFavouriteButtonPressed,
@@ -229,7 +229,7 @@ fun SoundSection(
 @Composable
 fun SoundRow(
     sound: ResourceSound,
-    isLiked: Boolean,
+    isFavourite: Boolean,
     onSoundPressed: (sound: ResourceSound, context: Context) -> Unit,
     onSoundShareButtonPressed: (sound: ResourceSound, context: Context) -> Unit,
     onFavouriteButtonPressed: (sound: ResourceSound) -> Unit,
@@ -257,9 +257,22 @@ fun SoundRow(
             )
         }
 
-        IconToggleButton(checked = isLiked, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
+        IconToggleButton(checked = isFavourite, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
+            @Suppress("MagicNumber")
+            val size by animateDpAsState(
+                targetValue = if (isFavourite) 26.dp else 24.dp,
+                animationSpec = keyframes {
+                    durationMillis = 250
+                    24.dp at 0 with LinearOutSlowInEasing
+                    26.dp at 15 with FastOutLinearInEasing
+                    30.dp at 75
+                    28.dp at 150
+                }
+            )
+
             Icon(
-                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                modifier = Modifier.size(size),
                 contentDescription = null,
             )
         }
@@ -368,9 +381,9 @@ fun FavouritesAndSearchRow(
                     val canvasHeight = this.size.height
                     val canvasWidth = this.size.width
                     drawLine(
-                        SolidColor(bottomBorderColor),
-                        Offset(0f, canvasHeight),
-                        Offset(canvasWidth / 2, canvasHeight),
+                        brush = SolidColor(bottomBorderColor),
+                        start = Offset(0f, canvasHeight),
+                        end = Offset(canvasWidth / 2, canvasHeight),
                         strokeWidth = 5.dp.value
                     )
                 }
@@ -406,18 +419,18 @@ fun DisplayOnlyFavouritesButton(
                 val canvasHeight = this.size.height
                 val canvasWidth = this.size.width
                 drawLine(
-                    SolidColor(bottomBorderColor),
-                    Offset(0f, canvasHeight),
-                    Offset(canvasWidth, canvasHeight),
-                    strokeWidth = 6.dp.value
+                    brush = SolidColor(bottomBorderColor),
+                    start = Offset(0f, canvasHeight),
+                    end = Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 6.dp.value,
                 )
 
                 @Suppress("MagicNumber")
                 drawLine(
-                    SolidColor(bottomBorderColor),
-                    Offset(canvasWidth, canvasHeight / 10),
-                    Offset(canvasWidth, canvasHeight),
-                    strokeWidth = 6.dp.value
+                    brush = SolidColor(bottomBorderColor),
+                    start = Offset(canvasWidth, canvasHeight / 10),
+                    end = Offset(canvasWidth, canvasHeight),
+                    strokeWidth = 6.dp.value,
                 )
             },
         checked = displayOnlyFavourites,
