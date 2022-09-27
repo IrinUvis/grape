@@ -206,7 +206,7 @@ fun SoundSection(
         items(
             items = filteredSounds.filter {
                 it.name.lowercase().contains(searchQuery.lowercase())
-            },
+            }.sorted(),
             key = { item -> item.completePath },
         ) { sound ->
             Column(
@@ -257,7 +257,9 @@ fun SoundRow(
             )
         }
 
-        IconToggleButton(checked = isFavourite, onCheckedChange = { onFavouriteButtonPressed(sound) }) {
+        IconToggleButton(
+            checked = isFavourite,
+            onCheckedChange = { onFavouriteButtonPressed(sound) }) {
             @Suppress("MagicNumber")
             val size by animateDpAsState(
                 targetValue = if (isFavourite) 26.dp else 24.dp,
