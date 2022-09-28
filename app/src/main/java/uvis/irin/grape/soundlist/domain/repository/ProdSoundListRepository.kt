@@ -65,8 +65,21 @@ class ProdSoundListRepository @Inject constructor(
     }
 
     override suspend fun fetchAllFavouriteSounds(): Result<List<ResourceSound>> =
-        favouriteSoundDao.getAll().map { it.toResourceSound() }.let {
-            Result.Success(data = it)
+        favouriteSoundDao.getAll().map { it.toResourceSound() }.let { sounds ->
+            val assetManager = context.assets
+
+            val filteredSounds = sounds.toMutableList()
+
+            for (sound in sounds) {
+               try {
+                   assetManager.open(sound.completePath)
+               } catch (ex: IOException) {
+                   deleteFavouriteSound(sound)
+                   filteredSounds.remove(sound)
+               }
+            }
+
+            Result.Success(data = filteredSounds)
         }
 
     override suspend fun insertFavouriteSound(favouriteSound: ResourceSound) {
@@ -76,6 +89,8 @@ class ProdSoundListRepository @Inject constructor(
     override suspend fun deleteFavouriteSound(favouriteSound: ResourceSound) {
         favouriteSoundDao.deleteFavouriteSound(favouriteSound.toPersistableFavouriteSound())
     }
+
+
 
     private fun findSubcategoriesForCategory(
         categoryPath: String,
