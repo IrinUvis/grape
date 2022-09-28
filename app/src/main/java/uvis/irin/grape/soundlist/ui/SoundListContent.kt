@@ -259,7 +259,8 @@ fun SoundRow(
 
         IconToggleButton(
             checked = isFavourite,
-            onCheckedChange = { onFavouriteButtonPressed(sound) }) {
+            onCheckedChange = { onFavouriteButtonPressed(sound) }
+        ) {
             @Suppress("MagicNumber")
             val size by animateDpAsState(
                 targetValue = if (isFavourite) 26.dp else 24.dp,
