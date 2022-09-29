@@ -2,6 +2,7 @@ package uvis.irin.grape.soundlist.domain.repository
 
 import android.content.Context
 import android.content.res.AssetManager
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import uvis.irin.grape.core.capitalize
 import uvis.irin.grape.core.data.Result
@@ -65,8 +66,27 @@ class ProdSoundListRepository @Inject constructor(
     }
 
     override suspend fun fetchAllFavouriteSounds(): Result<List<ResourceSound>> =
-        favouriteSoundDao.getAll().map { it.toResourceSound() }.let {
-            Result.Success(data = it)
+        favouriteSoundDao.getAll().map { it.toResourceSound() }.let { sounds ->
+            val assetManager = context.assets
+
+            val filteredSounds = sounds.toMutableList()
+
+            for (sound in sounds) {
+                try {
+                    assetManager.open(sound.completePath)
+                } catch (ex: IOException) {
+                    Log.i(
+                        "FAVOURITE SOUND",
+                        "Favourite sound with path ${sound.completePath} can't be found at this path. " +
+                            "Therefore it has been removed from favourite_sound table in the database.",
+                        ex
+                    )
+                    deleteFavouriteSound(sound)
+                    filteredSounds.remove(sound)
+                }
+            }
+
+            Result.Success(data = filteredSounds)
         }
 
     override suspend fun insertFavouriteSound(favouriteSound: ResourceSound) {
