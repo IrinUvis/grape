@@ -47,6 +47,7 @@ class SoundListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            @Suppress("MagicNumber")
             delay(1000)
             val getSoundCategoriesResult = withContext(Dispatchers.IO) {
                 getSoundCategoriesUseCase()
