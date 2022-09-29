@@ -28,6 +28,9 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 @Suppress("TooManyFunctions")
@@ -44,11 +47,15 @@ class SoundListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val getSoundCategoriesResult = getSoundCategoriesUseCase()
+            val getSoundCategoriesResult = withContext(Dispatchers.IO) {
+                getSoundCategoriesUseCase()
+            }
+
+            val favouriteSoundsResult = withContext(Dispatchers.IO) {
+                soundListRepository.fetchAllFavouriteSounds()
+            }
 
             _viewState.value = getViewStateForAllSoundCategoriesResult(getSoundCategoriesResult)
-
-            val favouriteSoundsResult = soundListRepository.fetchAllFavouriteSounds()
 
             _viewState.value = getViewStateForAllFavouriteSoundsResult(favouriteSoundsResult)
 
@@ -57,7 +64,9 @@ class SoundListViewModel @Inject constructor(
                 else _viewState.value.selectedCategory
 
             if (initialCategory != null) {
-                val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(initialCategory)
+                val getAllSoundsByCategoryResult = withContext(Dispatchers.IO) {
+                    getAllSoundsByCategoryUseCase(initialCategory)
+                }
 
                 _viewState.value =
                     getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
@@ -71,50 +80,56 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun onSoundPressed(sound: ResourceSound, context: Context) {
-        playSound(sound, context)
+        viewModelScope.launch(Dispatchers.IO) {
+            playSound(sound, context)
+        }
     }
 
     fun onSoundShareButtonPressed(sound: ResourceSound, context: Context) {
-        try {
-            val inStream =
-                context.assets.open(sound.completePath)
-            val soundTempFile = File.createTempFile("sound", ".mp3")
-            copyFile(inStream, FileOutputStream(soundTempFile))
+        viewModelScope.launch {
+            try {
+                val inStream = withContext(Dispatchers.IO) {
+                    context.assets.open(sound.completePath)
 
-            val authority = BuildConfig.APPLICATION_ID + ".provider"
-            val uri =
-                FileProvider.getUriForFile(context.applicationContext, authority, soundTempFile)
+                }
+                val soundTempFile = File.createTempFile("sound", ".mp3")
+                copyFile(inStream, FileOutputStream(soundTempFile))
 
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.type = "audio/mp3"
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+                val authority = BuildConfig.APPLICATION_ID + ".provider"
+                val uri =
+                    FileProvider.getUriForFile(context.applicationContext, authority, soundTempFile)
 
-            val chooser = Intent.createChooser(shareIntent, "Share sound")
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "audio/mp3"
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
 
-            val resInfoList: List<ResolveInfo> = context.packageManager
-                .queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+                val chooser = Intent.createChooser(shareIntent, "Share sound")
 
-            for (resolveInfo in resInfoList) {
-                val packageName = resolveInfo.activityInfo.packageName
-                context.grantUriPermission(
-                    packageName,
-                    uri,
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                val resInfoList: List<ResolveInfo> = context.packageManager
+                    .queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+
+                for (resolveInfo in resInfoList) {
+                    val packageName = resolveInfo.activityInfo.packageName
+                    context.grantUriPermission(
+                        packageName,
+                        uri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                }
+
+                context.startActivity(chooser)
+            } catch (ex: IOException) {
+                Log.e(
+                    "Sound sharing",
+                    "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared",
+                    ex
                 )
-            }
-
-            context.startActivity(chooser)
-        } catch (ex: IOException) {
-            Log.e(
-                "Sound sharing",
-                "${sound.category.assetsPath}/${sound.relativeAssetPath} cannot be shared",
-                ex
-            )
-            _viewState.update {
-                it.copy(
-                    errorMessage = "Cannot share the file"
-                )
+                _viewState.update {
+                    it.copy(
+                        errorMessage = "Cannot share the file"
+                    )
+                }
             }
         }
     }
@@ -134,7 +149,10 @@ class SoundListViewModel @Inject constructor(
                 else _viewState.value.selectedCategory
 
             if (currentCategory != null) {
-                val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(currentCategory)
+                val getAllSoundsByCategoryResult =
+                    withContext(Dispatchers.IO) {
+                        getAllSoundsByCategoryUseCase(currentCategory)
+                    }
 
                 _viewState.value =
                     getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)
@@ -150,7 +168,9 @@ class SoundListViewModel @Inject constructor(
                 )
             }
 
-            val getAllSoundsByCategoryResult = getAllSoundsByCategoryUseCase(category)
+            val getAllSoundsByCategoryResult = withContext(Dispatchers.IO) {
+                getAllSoundsByCategoryUseCase(category)
+            }
 
             _viewState.value =
                 getViewStateForAllSoundsByCategoryResult(getAllSoundsByCategoryResult)

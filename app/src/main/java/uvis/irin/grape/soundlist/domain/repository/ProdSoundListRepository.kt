@@ -71,7 +71,6 @@ class ProdSoundListRepository @Inject constructor(
 
             val filteredSounds = sounds.toMutableList()
 
-            @Suppress("SwallowedException")
             for (sound in sounds) {
                 try {
                     assetManager.open(sound.completePath)
@@ -79,7 +78,8 @@ class ProdSoundListRepository @Inject constructor(
                     Log.i(
                         "FAVOURITE SOUND",
                         "Favourite sound with path ${sound.completePath} can't be found at this path. " +
-                                "Therefore it has been removed from favourite_sound table in the database."
+                                "Therefore it has been removed from favourite_sound table in the database.",
+                        ex
                     )
                     deleteFavouriteSound(sound)
                     filteredSounds.remove(sound)
