@@ -11,10 +11,12 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.core.data.Result
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
@@ -28,9 +30,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 @Suppress("TooManyFunctions")
@@ -47,6 +47,7 @@ class SoundListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            delay(1000)
             val getSoundCategoriesResult = withContext(Dispatchers.IO) {
                 getSoundCategoriesUseCase()
             }
@@ -90,7 +91,6 @@ class SoundListViewModel @Inject constructor(
             try {
                 val inStream = withContext(Dispatchers.IO) {
                     context.assets.open(sound.completePath)
-
                 }
                 val soundTempFile = File.createTempFile("sound", ".mp3")
                 copyFile(inStream, FileOutputStream(soundTempFile))

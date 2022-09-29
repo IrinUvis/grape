@@ -78,7 +78,7 @@ class ProdSoundListRepository @Inject constructor(
                     Log.i(
                         "FAVOURITE SOUND",
                         "Favourite sound with path ${sound.completePath} can't be found at this path. " +
-                                "Therefore it has been removed from favourite_sound table in the database.",
+                            "Therefore it has been removed from favourite_sound table in the database.",
                         ex
                     )
                     deleteFavouriteSound(sound)
