@@ -7,6 +7,7 @@ package uvis.irin.grape.soundlist.ui
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -93,27 +94,29 @@ fun SoundListContent(
         modifier = Modifier
             .fillMaxSize(),
     ) {
-        when (viewState.showLoading) {
-            true -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
-                )
-            }
-            false -> {
-                LoadedSoundListContent(
-                    viewState,
-                    onSoundPressed = onSoundPressed,
-                    onSoundShareButtonPressed = onSoundShareButtonPressed,
-                    onCategorySelected = onCategorySelected,
-                    onSubcategorySelected = onSubcategorySelected,
-                    onFavouriteButtonPressed = onFavouriteButtonPressed,
-                    onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
-                    onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
-                    onBackButtonPressed = onBackButtonPressed,
-                    onErrorSnackbarDismissed = onErrorSnackbarDismissed
-                )
+        Crossfade(targetState = viewState.showLoading) { targetState ->
+            when (targetState) {
+                true -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                    )
+                }
+                false -> {
+                    LoadedSoundListContent(
+                        viewState,
+                        onSoundPressed = onSoundPressed,
+                        onSoundShareButtonPressed = onSoundShareButtonPressed,
+                        onCategorySelected = onCategorySelected,
+                        onSubcategorySelected = onSubcategorySelected,
+                        onFavouriteButtonPressed = onFavouriteButtonPressed,
+                        onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+                        onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
+                        onBackButtonPressed = onBackButtonPressed,
+                        onErrorSnackbarDismissed = onErrorSnackbarDismissed
+                    )
+                }
             }
         }
     }

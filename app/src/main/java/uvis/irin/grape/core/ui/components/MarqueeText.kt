@@ -42,7 +42,7 @@ import kotlinx.coroutines.delay
 
 private const val DELAY = 1000L
 private const val ANIMATION_DURATION_COEFFICIENT = 5000
-private const val SPACING_COEFFICIENT = 1 / 3
+private const val SPACING_DIVISOR = 3
 
 @Suppress("LongMethod")
 @Composable
@@ -134,7 +134,7 @@ fun MarqueeText(
             }.first().measure(constraints)
             textLayoutInfoState.value = null
         } else {
-            val spacing = constraints.maxWidth * SPACING_COEFFICIENT
+            val spacing = constraints.maxWidth / SPACING_DIVISOR
             textLayoutInfoState.value = TextLayoutInfo(
                 textWidth = mainText.width + spacing,
                 containerWidth = constraints.maxWidth
