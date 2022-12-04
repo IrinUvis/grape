@@ -351,9 +351,10 @@ fun SoundListTabBarSection(
             onCategorySelected = onCategorySelected,
         )
         AnimatedVisibility(visible = subcategories != null) {
-            val subcategoriesToDisplay by remember {
+            val subcategoriesCache by remember {
                 mutableStateOf(subcategories)
             }
+            val subcategoriesToDisplay = subcategories ?: subcategoriesCache
             subcategoriesToDisplay?.let {
                 val selectedTabIndex = it.indexOf(selectedSubcategory).let { chosenSubcategory ->
                     if (chosenSubcategory == -1) 0 else chosenSubcategory
