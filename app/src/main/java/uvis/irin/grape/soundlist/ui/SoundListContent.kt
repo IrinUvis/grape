@@ -13,7 +13,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -69,9 +68,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uvis.irin.grape.core.ui.components.MarqueeText
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 
@@ -196,7 +196,10 @@ fun SoundSection(
     LazyColumn(
         modifier = Modifier
             .padding(paddingValues)
-            .padding(10.dp)
+            .padding(
+                horizontal = 8.dp,
+                vertical = 4.dp,
+            )
     ) {
         val filteredSounds = if (displayOnlyFavourites) sounds.filter {
             favouriteSounds.contains(it)
@@ -240,7 +243,6 @@ fun SoundRow(
         modifier = modifier
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End,
     ) {
         FilledTonalButton(
             modifier = Modifier
@@ -248,11 +250,11 @@ fun SoundRow(
                 .padding(vertical = 6.dp),
             onClick = { onSoundPressed(sound, context) },
         ) {
-            Text(
+            MarqueeText(
                 text = sound.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelSmall,
+                gradientEdgeColor = Color.Transparent
             )
         }
 
@@ -271,6 +273,8 @@ fun SoundRow(
                     28.dp at 150
                 }
             )
+
+//            44 za dwa chleby, 25 drożdżowiec = 69
 
             Icon(
                 imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
