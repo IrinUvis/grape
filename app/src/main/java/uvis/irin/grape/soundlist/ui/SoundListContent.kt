@@ -57,6 +57,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -347,10 +348,16 @@ fun SoundListTabBarSection(
             onCategorySelected = onCategorySelected,
         )
         AnimatedVisibility(visible = subcategories != null) {
-            subcategories?.let {
+            val subcategoriesToDisplay by remember {
+                mutableStateOf(subcategories)
+            }
+            subcategoriesToDisplay?.let {
+                val selectedTabIndex = it.indexOf(selectedSubcategory).let { chosenSubcategory ->
+                    if (chosenSubcategory == -1) 0 else chosenSubcategory
+                }
                 SoundListTabBar(
                     categories = it,
-                    selectedTabIndex = subcategories.indexOf(selectedSubcategory),
+                    selectedTabIndex = selectedTabIndex,
                     onCategorySelected = onSubcategorySelected
                 )
             }
