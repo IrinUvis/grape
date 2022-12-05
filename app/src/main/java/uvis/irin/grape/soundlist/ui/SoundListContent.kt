@@ -7,12 +7,13 @@ package uvis.irin.grape.soundlist.ui
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -38,7 +38,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -59,6 +58,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -70,9 +70,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uvis.irin.grape.core.ui.components.MarqueeText
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 
@@ -93,27 +94,29 @@ fun SoundListContent(
         modifier = Modifier
             .fillMaxSize(),
     ) {
-        when (viewState.showLoading) {
-            true -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .align(Alignment.Center),
-                )
-            }
-            false -> {
-                LoadedSoundListContent(
-                    viewState,
-                    onSoundPressed = onSoundPressed,
-                    onSoundShareButtonPressed = onSoundShareButtonPressed,
-                    onCategorySelected = onCategorySelected,
-                    onSubcategorySelected = onSubcategorySelected,
-                    onFavouriteButtonPressed = onFavouriteButtonPressed,
-                    onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
-                    onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
-                    onBackButtonPressed = onBackButtonPressed,
-                    onErrorSnackbarDismissed = onErrorSnackbarDismissed
-                )
+        Crossfade(targetState = viewState.showLoading) { targetState ->
+            when (targetState) {
+                true -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                    )
+                }
+                false -> {
+                    LoadedSoundListContent(
+                        viewState,
+                        onSoundPressed = onSoundPressed,
+                        onSoundShareButtonPressed = onSoundShareButtonPressed,
+                        onCategorySelected = onCategorySelected,
+                        onSubcategorySelected = onSubcategorySelected,
+                        onFavouriteButtonPressed = onFavouriteButtonPressed,
+                        onDisplayOnlyFavouritesButtonPressed = onDisplayOnlyFavouritesButtonPressed,
+                        onSoundSearchBarTextChanged = onSoundSearchBarTextChanged,
+                        onBackButtonPressed = onBackButtonPressed,
+                        onErrorSnackbarDismissed = onErrorSnackbarDismissed
+                    )
+                }
             }
         }
     }
@@ -197,7 +200,10 @@ fun SoundSection(
     LazyColumn(
         modifier = Modifier
             .padding(paddingValues)
-            .padding(10.dp)
+            .padding(
+                horizontal = 8.dp,
+                vertical = 4.dp,
+            )
     ) {
         val filteredSounds = if (displayOnlyFavourites) sounds.filter {
             favouriteSounds.contains(it)
@@ -241,7 +247,6 @@ fun SoundRow(
         modifier = modifier
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End,
     ) {
         FilledTonalButton(
             modifier = Modifier
@@ -249,11 +254,11 @@ fun SoundRow(
                 .padding(vertical = 6.dp),
             onClick = { onSoundPressed(sound, context) },
         ) {
-            Text(
+            MarqueeText(
                 text = sound.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelSmall,
+                gradientEdgeColor = Color.Transparent
             )
         }
 
@@ -272,6 +277,8 @@ fun SoundRow(
                     28.dp at 150
                 }
             )
+
+//            44 za dwa chleby, 25 drożdżowiec = 69
 
             Icon(
                 imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -344,10 +351,17 @@ fun SoundListTabBarSection(
             onCategorySelected = onCategorySelected,
         )
         AnimatedVisibility(visible = subcategories != null) {
-            subcategories?.let {
+            val subcategoriesCache by remember {
+                mutableStateOf(subcategories)
+            }
+            val subcategoriesToDisplay = subcategories ?: subcategoriesCache
+            subcategoriesToDisplay?.let {
+                val selectedTabIndex = it.indexOf(selectedSubcategory).let { chosenSubcategory ->
+                    if (chosenSubcategory == -1) 0 else chosenSubcategory
+                }
                 SoundListTabBar(
                     categories = it,
-                    selectedTabIndex = subcategories.indexOf(selectedSubcategory),
+                    selectedTabIndex = selectedTabIndex,
                     onCategorySelected = onSubcategorySelected
                 )
             }

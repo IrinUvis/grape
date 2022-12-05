@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -47,8 +46,6 @@ class SoundListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            @Suppress("MagicNumber")
-            delay(1000)
             val getSoundCategoriesResult = withContext(Dispatchers.IO) {
                 getSoundCategoriesUseCase()
             }
@@ -209,7 +206,7 @@ class SoundListViewModel @Inject constructor(
                 category = ResourceSoundCategory(
                     name = "Stonoga",
                     subcategories = null,
-                    assetsPath = "sounds/6_qrwio vadis"
+                    assetsPath = "sounds/06_qrwio vadis"
                 ),
                 relativeAssetPath = "Do widzenia.mp3"
             )
