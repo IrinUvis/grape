@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "965097646964",
+    "project_id": "grape-f2abf",
+    "storage_bucket": "grape-f2abf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965097646964:android:656963ed279a88be965a21",
+        "android_client_info": {
+          "package_name": "uvis.irin.grape"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965097646964-kefet0ik3uvm0ce9u53ju5fh8h3js6o3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtq6IUtgBipwXN_EOLFd3VSShCEBsBzW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965097646964-kefet0ik3uvm0ce9u53ju5fh8h3js6o3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

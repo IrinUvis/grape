@@ -27,6 +27,8 @@ ext {
             // https://developer.android.com/jetpack/androidx/releases/hilt
             hiltNavigationCompose: "1.0.0",
             // https://developer.android.com/jetpack/androidx/releases/room
-            room                 : "2.5.0"
+            room                 : "2.5.0",
+            // https://firebase.google.com/support/release-notes/android
+            firebaseBom          : "31.1.1"
     ]
 }

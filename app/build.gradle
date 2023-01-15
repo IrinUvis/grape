@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     id "kotlin-kapt"
     id "dagger.hilt.android.plugin"
+    id "com.google.gms.google-services"
 }
 
 android {
@@ -84,6 +85,7 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:$rootProject.ext.versions.hiltNavigationCompose"
     implementation "androidx.room:room-runtime:$rootProject.ext.versions.room"
     implementation "androidx.room:room-ktx:$rootProject.ext.versions.room"
+    implementation platform("com.google.firebase:firebase-bom:$rootProject.ext.versions.firabaseBom")
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
     kapt "androidx.room:room-compiler:$rootProject.ext.versions.room"
     testImplementation "junit:junit:$rootProject.ext.versions.junit"
