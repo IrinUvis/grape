@@ -28,15 +28,11 @@ fun GrapeTheme(
         else -> LightThemeColors
     }
 
-    androidx.compose.material.MaterialTheme(
-        colors = if (isDark) DarkMD2Colors else LightMD2Colors,
-    ) {
-        MaterialTheme(
-            colorScheme = colors,
-            typography = AppTypography,
-            content = content
-        )
-    }
+    MaterialTheme(
+        colorScheme = colors,
+        typography = AppTypography,
+        content = content
+    )
 }
 
 private fun isAtLeastAndroid12(): Boolean {

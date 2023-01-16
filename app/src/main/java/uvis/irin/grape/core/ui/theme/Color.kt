@@ -2,8 +2,6 @@
 
 package uvis.irin.grape.core.ui.theme
 
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
@@ -121,30 +119,4 @@ val DarkThemeColors = darkColorScheme(
     inversePrimary = dark_inversePrimary,
     inverseSurface = dark_inverseSurface,
     inverseOnSurface = dark_inverseOnSurface,
-)
-
-val DarkMD2Colors = darkColors(
-    primary = DarkThemeColors.primary,
-    secondary = DarkThemeColors.secondary,
-    background = DarkThemeColors.background,
-    surface = DarkThemeColors.surface,
-    error = DarkThemeColors.error,
-    onPrimary = DarkThemeColors.onPrimary,
-    onSecondary = DarkThemeColors.onSecondary,
-    onBackground = DarkThemeColors.onBackground,
-    onSurface = DarkThemeColors.onSurface,
-    onError = DarkThemeColors.onError,
-)
-
-val LightMD2Colors = lightColors(
-    primary = LightThemeColors.primary,
-    secondary = LightThemeColors.secondary,
-    background = LightThemeColors.background,
-    surface = LightThemeColors.surface,
-    error = LightThemeColors.error,
-    onPrimary = LightThemeColors.onPrimary,
-    onSecondary = LightThemeColors.onSecondary,
-    onBackground = LightThemeColors.onBackground,
-    onSurface = LightThemeColors.onSurface,
-    onError = LightThemeColors.onError,
 )
