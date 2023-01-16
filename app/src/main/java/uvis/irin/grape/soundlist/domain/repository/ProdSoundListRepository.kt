@@ -5,7 +5,7 @@ import android.content.res.AssetManager
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import uvis.irin.grape.core.capitalize
-import uvis.irin.grape.core.data.Result
+import uvis.irin.grape.core.data.DataResult
 import uvis.irin.grape.core.data.local.favouritesounds.FavouriteSoundDao
 import uvis.irin.grape.core.data.local.favouritesounds.toPersistableFavouriteSound
 import uvis.irin.grape.core.data.local.favouritesounds.toResourceSound
@@ -24,11 +24,11 @@ class ProdSoundListRepository @Inject constructor(
         const val ASSET_SOUNDS_PATH = "sounds"
     }
 
-    override suspend fun fetchAllCategories(): Result<List<ResourceSoundCategory>> {
+    override suspend fun fetchAllCategories(): DataResult<List<ResourceSoundCategory>> {
         val assetManager = context.assets
 
         return assetManager.list(ASSET_SOUNDS_PATH)?.let { directoriesNames ->
-            Result.Success(
+            DataResult.Success(
                 data = directoriesNames.map { directoryName ->
                     val subcategories = findSubcategoriesForCategory(
                         categoryPath = "$ASSET_SOUNDS_PATH/$directoryName",
@@ -42,16 +42,16 @@ class ProdSoundListRepository @Inject constructor(
                     )
                 },
             )
-        } ?: Result.Error(error = IOException("An error has occurred while reading the assets"))
+        } ?: DataResult.Failure(failure = IOException("An error has occurred while reading the assets"))
     }
 
-    override suspend fun fetchSoundsByCategory(category: ResourceSoundCategory): Result<List<ResourceSound>> {
+    override suspend fun fetchSoundsByCategory(category: ResourceSoundCategory): DataResult<List<ResourceSound>> {
         val assetManager = context.assets
 
         return assetManager.list(category.assetsPath)
             ?.filter { it.endsWith(".mp3") }
             ?.let { soundFilenames ->
-                Result.Success(
+                DataResult.Success(
                     data = soundFilenames.map {
                         ResourceSound(
                             name = it
@@ -62,10 +62,10 @@ class ProdSoundListRepository @Inject constructor(
                     }
                 )
             }
-            ?: Result.Error(error = IOException("An error has occurred while reading the assets"))
+            ?: DataResult.Failure(failure = IOException("An error has occurred while reading the assets"))
     }
 
-    override suspend fun fetchAllFavouriteSounds(): Result<List<ResourceSound>> =
+    override suspend fun fetchAllFavouriteSounds(): DataResult<List<ResourceSound>> =
         favouriteSoundDao.getAll().map { it.toResourceSound() }.let { sounds ->
             val assetManager = context.assets
 
@@ -86,7 +86,7 @@ class ProdSoundListRepository @Inject constructor(
                 }
             }
 
-            Result.Success(data = filteredSounds)
+            DataResult.Success(data = filteredSounds)
         }
 
     override suspend fun insertFavouriteSound(favouriteSound: ResourceSound) {

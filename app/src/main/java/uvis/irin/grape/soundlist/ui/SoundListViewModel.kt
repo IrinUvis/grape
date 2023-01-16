@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uvis.irin.grape.BuildConfig
-import uvis.irin.grape.core.data.Result
+import uvis.irin.grape.core.data.DataResult
 import uvis.irin.grape.soundlist.domain.model.ResourceSound
 import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
 import uvis.irin.grape.soundlist.domain.repository.ProdSoundListRepository
@@ -30,6 +30,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
+import uvis.irin.grape.soundlist.data.repository.SoundRepository
 
 @HiltViewModel
 @Suppress("TooManyFunctions")
@@ -275,18 +276,18 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun getViewStateForAllSoundCategoriesResult(
-        getSoundCategoriesResult: Result<List<ResourceSoundCategory>>
+        getSoundCategoriesDataResult: DataResult<List<ResourceSoundCategory>>
     ): SoundListViewState {
-        return when (getSoundCategoriesResult) {
-            is Result.Success -> {
+        return when (getSoundCategoriesDataResult) {
+            is DataResult.Success -> {
                 _viewState.value.copy(
-                    categories = getSoundCategoriesResult.data,
-                    subcategories = getSoundCategoriesResult.data.first().subcategories,
-                    selectedCategory = getSoundCategoriesResult.data.first(),
-                    selectedSubcategory = getSoundCategoriesResult.data.first().subcategories?.firstOrNull()
+                    categories = getSoundCategoriesDataResult.data,
+                    subcategories = getSoundCategoriesDataResult.data.first().subcategories,
+                    selectedCategory = getSoundCategoriesDataResult.data.first(),
+                    selectedSubcategory = getSoundCategoriesDataResult.data.first().subcategories?.firstOrNull()
                 )
             }
-            is Result.Error -> {
+            is DataResult.Failure -> {
                 _viewState.value.copy(
                     categories = emptyList()
                 )
@@ -295,16 +296,16 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun getViewStateForAllSoundsByCategoryResult(
-        getAllSoundsByCategoryResult: Result<List<ResourceSound>>
+        getAllSoundsByCategoryDataResult: DataResult<List<ResourceSound>>
     ): SoundListViewState {
-        return when (getAllSoundsByCategoryResult) {
-            is Result.Success -> {
+        return when (getAllSoundsByCategoryDataResult) {
+            is DataResult.Success -> {
                 _viewState.value.copy(
                     showLoading = false,
-                    sounds = getAllSoundsByCategoryResult.data
+                    sounds = getAllSoundsByCategoryDataResult.data
                 )
             }
-            is Result.Error -> {
+            is DataResult.Failure -> {
                 _viewState.value.copy(
                     showLoading = false,
                     sounds = emptyList()
@@ -314,15 +315,15 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun getViewStateForAllFavouriteSoundsResult(
-        fetchAllFavouriteSoundsResult: Result<List<ResourceSound>>
+        fetchAllFavouriteSoundsDataResult: DataResult<List<ResourceSound>>
     ): SoundListViewState {
-        return when (fetchAllFavouriteSoundsResult) {
-            is Result.Success -> {
+        return when (fetchAllFavouriteSoundsDataResult) {
+            is DataResult.Success -> {
                 _viewState.value.copy(
-                    favouriteSounds = fetchAllFavouriteSoundsResult.data
+                    favouriteSounds = fetchAllFavouriteSoundsDataResult.data
                 )
             }
-            is Result.Error -> {
+            is DataResult.Failure -> {
                 _viewState.value.copy(
                     favouriteSounds = emptyList()
                 )
