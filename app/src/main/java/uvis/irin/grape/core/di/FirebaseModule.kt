@@ -11,11 +11,13 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
 
+    private const val RETRY_TIME_MILLIS = 5000L
+
     @Provides
     fun provideFirebaseStorage() = Firebase.storage.apply {
-        maxDownloadRetryTimeMillis = 5000
-        maxUploadRetryTimeMillis = 5000
-        maxOperationRetryTimeMillis = 5000
-        maxChunkUploadRetry = 5000
+        maxDownloadRetryTimeMillis = RETRY_TIME_MILLIS
+        maxUploadRetryTimeMillis = RETRY_TIME_MILLIS
+        maxOperationRetryTimeMillis = RETRY_TIME_MILLIS
+        maxChunkUploadRetry = RETRY_TIME_MILLIS
     }
 }
