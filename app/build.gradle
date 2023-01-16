@@ -99,6 +99,9 @@ dependencies {
     implementation platform("com.google.firebase:firebase-bom:$rootProject.ext.versions.firebaseBom")
     implementation "com.google.firebase:firebase-storage-ktx"
 
+    // Splash screen API
+    implementation "androidx.core:core-splashscreen:$rootProject.ext.versions.splashScreenVersion"
+
     // Tests
     testImplementation "junit:junit:$rootProject.ext.versions.junit"
     testImplementation "com.google.truth:truth:$rootProject.ext.versions.truthVersion"

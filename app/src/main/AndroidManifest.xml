@@ -7,6 +7,8 @@
     <application
         android:name=".GrapeApp"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/grape_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/grape_launcher_round"
