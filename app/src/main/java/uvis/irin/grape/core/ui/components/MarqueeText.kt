@@ -49,7 +49,7 @@ private const val SPACING_DIVISOR = 3
 fun MarqueeText(
     text: String,
     modifier: Modifier = Modifier,
-    gradientEdgeColor: Color = Color.White,
+    gradientEdgeColor: Color = Color.Transparent,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
