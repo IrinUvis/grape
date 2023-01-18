@@ -19,7 +19,7 @@ ext {
             // https://developer.android.com/jetpack/androidx/releases/compose-material3
             md3                  : "1.0.1",
             // https://github.com/google/accompanist/releases
-            accompanist          : "0.27.0",
+            accompanist          : "0.28.0",
             // https://developer.android.com/jetpack/androidx/releases/hilt
             hiltNavigationCompose: "1.0.0",
             // https://developer.android.com/jetpack/androidx/releases/room

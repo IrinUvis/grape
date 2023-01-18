@@ -13,8 +13,8 @@ fun SoundListScreen(
     SoundListContent(
         viewState = viewState.value,
         onNavigationIconPressed = { },
-        onSoundButtonClicked = { },
-        onFavouriteButtonClicked = { },
-        onShareButtonClicked = { },
+        onSoundButtonClicked = viewModel::playSound,
+        onFavouriteButtonClicked = viewModel::toggleFavouriteSound,
+        onShareButtonClicked = viewModel::shareSound,
     )
 }

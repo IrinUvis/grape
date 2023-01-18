@@ -1,6 +1,9 @@
 package uvis.irin.grape.soundlist.ui.components
 
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,13 +36,13 @@ fun SoundRow(
     onShareButtonClicked: (UiSound) -> Unit,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier.padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FilledTonalButton(
             modifier = modifier
                 .weight(1f)
-                .padding(6.dp),
+                .padding(horizontal = 4.dp),
             onClick = { onSoundButtonClicked(sound) },
         ) {
             MarqueeText(
@@ -50,16 +53,24 @@ fun SoundRow(
         }
 
         IconToggleButton(
-            checked = sound.favourite,
+            checked = sound.isFavourite,
             onCheckedChange = { onFavouriteButtonClicked(sound) },
         ) {
             val size by animateDpAsState(
-                targetValue = if (sound.favourite) 26.dp else 24.dp
+                targetValue = if (sound.isFavourite) 25.dp else 24.dp,
+                animationSpec = keyframes {
+                    durationMillis = 250
+
+                    24.dp at 0 with LinearOutSlowInEasing
+                    26.dp at 15 with FastOutLinearInEasing
+                    30.dp at 75
+                    28.dp at 150
+                }
             )
 
             Icon(
                 modifier = Modifier.size(size),
-                imageVector = if (sound.favourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (sound.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = stringResource(R.string.favouriteSoundToggleButtonContentDescription),
             )
         }

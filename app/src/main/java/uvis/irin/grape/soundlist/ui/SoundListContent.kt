@@ -1,6 +1,6 @@
 package uvis.irin.grape.soundlist.ui
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -35,33 +35,40 @@ fun SoundListContent(
             )
         },
     ) { paddingValues ->
-        Box(
+        Crossfade(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(
                     horizontal = 8.dp,
                     vertical = 8.dp,
                 ),
-        ) {
-            when (viewState) {
-                is SoundListViewState.Loading -> LoadingContent()
-                is SoundListViewState.SoundsLoaded -> SoundsLoadedContent(
-                    sounds = viewState.sounds,
-                    scrollBehavior = scrollBehavior,
-                    onSoundButtonClicked = onSoundButtonClicked,
-                    onFavouriteButtonClicked = onFavouriteButtonClicked,
-                    onShareButtonClicked = onShareButtonClicked,
-                )
-                is SoundListViewState.LoadingError -> LoadingErrorContent(
-                    errorMessage = viewState.errorMessage,
-                )
+            targetState = viewState.type
+        ) { stateType ->
+            when (stateType) {
+                SoundListViewStateType.Loading -> {
+                    (viewState as? SoundListViewState.Loading)?.let {
+                        LoadingContent()
+                    }
+                }
+                SoundListViewStateType.SoundsLoaded -> {
+                    (viewState as? SoundListViewState.SoundsLoaded)?.let {
+                        SoundsLoadedContent(
+                            sounds = viewState.sounds,
+                            scrollBehavior = scrollBehavior,
+                            onSoundButtonClicked = onSoundButtonClicked,
+                            onFavouriteButtonClicked = onFavouriteButtonClicked,
+                            onShareButtonClicked = onShareButtonClicked,
+                        )
+                    }
+                }
+                SoundListViewStateType.LoadingError -> {
+                    (viewState as? SoundListViewState.LoadingError)?.let {
+                        LoadingErrorContent(
+                            errorMessage = viewState.errorMessage,
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-
-
-
-
-

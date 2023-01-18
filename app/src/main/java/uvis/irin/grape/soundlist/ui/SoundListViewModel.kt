@@ -56,7 +56,19 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun toggleFavouriteSound(sound: UiSound) {
-
+        (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
+            val soundIndex = state.sounds.indexOf(sound)
+            val newSounds = state.sounds.mapIndexed { index, previousSound ->
+                if (index == soundIndex) UiSound(
+                    fileName = sound.fileName,
+                    isFavourite = !sound.isFavourite,
+                ) else previousSound
+            }
+            _viewState.value= SoundListViewState.SoundsLoaded(
+                category = state.category,
+                sounds = newSounds
+            )
+        }
     }
 
     fun shareSound(sound: UiSound) {

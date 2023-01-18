@@ -1,6 +1,5 @@
 package uvis.irin.grape.soundlist.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,7 +9,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,7 +23,6 @@ fun SoundsLoadedContent(
 ) {
     LazyColumn(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(sounds) { sound ->
             Column {
