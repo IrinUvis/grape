@@ -15,6 +15,7 @@ class FirebaseSoundRepository @Inject constructor(
 ) : SoundRepository {
     companion object {
         private const val TAG = "FirebaseSoundRepository"
+        private const val MAX_SOUND_FILE_SIZE_IN_BYTES: Long = 10 * 1024 * 1024 // 5MB
     }
 
     override suspend fun fetchSoundsForPath(path: String): DataResult<List<Sound>> {
@@ -29,8 +30,23 @@ class FirebaseSoundRepository @Inject constructor(
             DataResult.Failure(e)
         }
     }
+
+    override suspend fun fetchByteArrayForPath(path: String): DataResult<ByteArray> {
+        return try {
+            val reference = firebaseStorage.reference.child(path)
+            val result = reference.getBytes(MAX_SOUND_FILE_SIZE_IN_BYTES).await()
+            DataResult.Success(result)
+        } catch (e: StorageException) {
+            Log.d(TAG, "fetchSoundsForPath: $e")
+            DataResult.Failure(e)
+        } catch (e: IndexOutOfBoundsException) {
+            Log.d(TAG, "fetchSoundsForPath: $e")
+            DataResult.Failure(e)
+        }
+    }
 }
 
 fun StorageReference.toSound() = Sound(
-    name = name
+    name = this.name,
+    path = this.path,
 )

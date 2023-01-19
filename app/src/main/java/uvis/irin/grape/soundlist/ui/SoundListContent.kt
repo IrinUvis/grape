@@ -46,7 +46,7 @@ fun SoundListContent(
         ) { stateType ->
             when (stateType) {
                 SoundListViewStateType.Loading -> {
-                    (viewState as? SoundListViewState.Loading)?.let {
+                    (viewState as? SoundListViewState.LoadingSounds)?.let {
                         LoadingContent()
                     }
                 }
@@ -61,8 +61,8 @@ fun SoundListContent(
                         )
                     }
                 }
-                SoundListViewStateType.LoadingError -> {
-                    (viewState as? SoundListViewState.LoadingError)?.let {
+                SoundListViewStateType.LoadingSoundsError -> {
+                    (viewState as? SoundListViewState.LoadingSoundsError)?.let {
                         LoadingErrorContent(
                             errorMessage = viewState.errorMessage,
                         )

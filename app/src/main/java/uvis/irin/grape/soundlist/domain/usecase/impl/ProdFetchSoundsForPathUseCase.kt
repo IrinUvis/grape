@@ -25,7 +25,7 @@ class ProdFetchSoundsForPathUseCase @Inject constructor(
             }
             is DataResult.Failure -> {
                 val failure = result.failure
-                Log.e(TAG, "DataResult.Failure", failure)
+                Log.d(TAG, "DataResult.Failure", failure)
                 when (failure) {
                     is StorageException -> {
                         when (failure.errorCode) {

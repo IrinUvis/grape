@@ -8,32 +8,50 @@ sealed class SoundListViewState(
     val type: SoundListViewStateType,
 ) {
 
-    data class Loading(
+    data class LoadingSounds(
         override val category: UiCategory,
     ) : SoundListViewState(
         category = category,
         type = SoundListViewStateType.Loading
     )
 
-    data class SoundsLoaded(
+    sealed class SoundsLoaded(
         override val category: UiCategory,
-        val sounds: List<UiSound>,
+        open val sounds: List<UiSound>,
     ) : SoundListViewState(
         category = category,
         type = SoundListViewStateType.SoundsLoaded
-    )
+    ) {
+        data class Active(
+            override val category: UiCategory,
+            override val sounds: List<UiSound>,
+        ) : SoundsLoaded(
+            category = category,
+            sounds = sounds,
+        )
 
-    data class LoadingError(
+        data class DownloadingError(
+            override val category: UiCategory,
+            override val sounds: List<UiSound>,
+            val errorMessage: String,
+        ) : SoundsLoaded(
+            category = category,
+            sounds = sounds,
+        )
+    }
+
+
+    data class LoadingSoundsError(
         override val category: UiCategory,
         val errorMessage: String,
     ) : SoundListViewState(
         category = category,
-        type = SoundListViewStateType.LoadingError
+        type = SoundListViewStateType.LoadingSoundsError
     )
 }
 
 enum class SoundListViewStateType {
     Loading,
     SoundsLoaded,
-    LoadingError,
+    LoadingSoundsError,
 }

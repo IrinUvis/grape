@@ -1,14 +1,25 @@
 package uvis.irin.grape.soundlist.ui
 
+import android.content.Context
+import android.content.Intent
+import android.media.MediaPlayer
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import uvis.irin.grape.BuildConfig
+import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
+import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
 import uvis.irin.grape.soundlist.ui.model.UiCategory
 import uvis.irin.grape.soundlist.ui.model.UiSound
@@ -16,16 +27,20 @@ import uvis.irin.grape.soundlist.ui.model.toUiSound
 
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
+    @ApplicationContext private val context: Context, // invalid warning
     private val fetchSoundsForPathUseCase: FetchSoundsForPathUseCase,
+    private val fetchByteArrayForPathUseCase: FetchByteArrayForPathUseCase,
 ) : ViewModel() {
+
+    private val mediaPlayer = MediaPlayer()
 
     private val category = UiCategory(
         name = "Jail",
         absolutePath = "sounds/01_jail"
-    )
+    ) // TOA did sth cool with navigation args
 
     private val _viewState: MutableStateFlow<SoundListViewState> = MutableStateFlow(
-        SoundListViewState.Loading(category)
+        SoundListViewState.LoadingSounds(category)
     )
     val viewState: StateFlow<SoundListViewState> = _viewState.asStateFlow()
 
@@ -34,11 +49,11 @@ class SoundListViewModel @Inject constructor(
             val path = _viewState.value.category.absolutePath
 
             _viewState.value = when (val result = fetchSoundsForPathUseCase(path)) {
-                is FetchSoundsForPathResult.Success -> SoundListViewState.SoundsLoaded(
+                is FetchSoundsForPathResult.Success -> SoundListViewState.SoundsLoaded.Active(
                     category = _viewState.value.category,
                     sounds = result.sounds.map { it.toUiSound() }
                 )
-                is FetchSoundsForPathResult.Failure -> SoundListViewState.LoadingError(
+                is FetchSoundsForPathResult.Failure -> SoundListViewState.LoadingSoundsError(
                     category = _viewState.value.category,
                     errorMessage = when (result) {
                         is FetchSoundsForPathResult.Failure.NoNetwork -> "NoNetwork"
@@ -52,7 +67,45 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun playSound(sound: UiSound) {
+        viewModelScope.launch {
+            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
+                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                    is FetchByteArrayForPathResult.Success -> {
+                        val bytes = result.bytes
 
+                        // Creating file from downloaded bytes and save it in cache
+                        val outputDir = context.cacheDir
+                        val soundFile = File.createTempFile("sound", ".mp3", outputDir)
+                        val fos = FileOutputStream(soundFile)
+                        fos.write(bytes)
+                        fos.close()
+
+                        // Play the sound
+                        mediaPlayer.reset()
+                        val fis = FileInputStream(soundFile)
+                        mediaPlayer.setDataSource(fis.fd)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+
+                        // Delete the sound from cache
+                        soundFile.delete()
+                    }
+                    is FetchByteArrayForPathResult.Failure -> {
+                        _viewState.value = SoundListViewState.SoundsLoaded.DownloadingError(
+                            category = _viewState.value.category,
+                            sounds = state.sounds,
+                            errorMessage = when (result) {
+                                is FetchByteArrayForPathResult.Failure.NoNetwork -> "NoNetwork"
+                                is FetchByteArrayForPathResult.Failure.ExceededFreeTier -> "ExceededFreeTier"
+                                is FetchByteArrayForPathResult.Failure.TooLargeFile -> "TooLargeFile"
+                                is FetchByteArrayForPathResult.Failure.Unexpected -> "Unexpected"
+                                is FetchByteArrayForPathResult.Failure.Unknown -> "Unknown"
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun toggleFavouriteSound(sound: UiSound) {
@@ -61,10 +114,11 @@ class SoundListViewModel @Inject constructor(
             val newSounds = state.sounds.mapIndexed { index, previousSound ->
                 if (index == soundIndex) UiSound(
                     fileName = sound.fileName,
+                    path = sound.path,
                     isFavourite = !sound.isFavourite,
                 ) else previousSound
             }
-            _viewState.value= SoundListViewState.SoundsLoaded(
+            _viewState.value = SoundListViewState.SoundsLoaded.Active(
                 category = state.category,
                 sounds = newSounds
             )
@@ -72,6 +126,54 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun shareSound(sound: UiSound) {
+        viewModelScope.launch {
+            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
+                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                    is FetchByteArrayForPathResult.Success -> {
+                        val bytes = result.bytes
 
+                        // Creating file from downloaded bytes and save it in cache
+                        val outputDir = context.cacheDir
+                        val soundFile = File.createTempFile("sound", ".mp3", outputDir)
+                        val fos = FileOutputStream(soundFile)
+                        fos.write(bytes)
+                        fos.close()
+
+                        // Share the file
+                        val authority = BuildConfig.APPLICATION_ID + ".fileprovider"
+                        val uri = FileProvider.getUriForFile(context, authority, soundFile)
+
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "audio/mp3"
+                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                        }
+
+                        val chooserIntent = Intent.createChooser(shareIntent, null).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+
+                        context.grantUriPermission("android", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        context.startActivity(chooserIntent)
+
+                        // Don't delete the file from cache as it is required by the content receivers of other apps.
+                    }
+                    is FetchByteArrayForPathResult.Failure -> {
+                        _viewState.value = SoundListViewState.SoundsLoaded.DownloadingError(
+                            category = _viewState.value.category,
+                            sounds = state.sounds,
+                            errorMessage = when (result) {
+                                is FetchByteArrayForPathResult.Failure.NoNetwork -> "NoNetwork"
+                                is FetchByteArrayForPathResult.Failure.ExceededFreeTier -> "ExceededFreeTier"
+                                is FetchByteArrayForPathResult.Failure.TooLargeFile -> "TooLargeFile"
+                                is FetchByteArrayForPathResult.Failure.Unexpected -> "Unexpected"
+                                is FetchByteArrayForPathResult.Failure.Unknown -> "Unknown"
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
