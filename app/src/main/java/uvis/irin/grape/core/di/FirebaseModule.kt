@@ -11,7 +11,7 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
 
-    private const val RETRY_TIME_MILLIS = 5000L
+    private const val RETRY_TIME_MILLIS = 2000L
 
     @Provides
     fun provideFirebaseStorage() = Firebase.storage.apply {

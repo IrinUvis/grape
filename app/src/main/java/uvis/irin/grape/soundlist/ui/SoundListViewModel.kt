@@ -1,9 +1,7 @@
 package uvis.irin.grape.soundlist.ui
 
 import android.content.Context
-import android.content.Intent
 import android.media.MediaPlayer
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import uvis.irin.grape.BuildConfig
+import uvis.irin.grape.core.provider.file.FileSharingService
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
@@ -27,9 +25,10 @@ import uvis.irin.grape.soundlist.ui.model.toUiSound
 
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
-    @ApplicationContext private val context: Context, // invalid warning
+    @ApplicationContext private val context: Context,
     private val fetchSoundsForPathUseCase: FetchSoundsForPathUseCase,
     private val fetchByteArrayForPathUseCase: FetchByteArrayForPathUseCase,
+    private val fileSharingService: FileSharingService,
 ) : ViewModel() {
 
     private val mediaPlayer = MediaPlayer()
@@ -140,22 +139,7 @@ class SoundListViewModel @Inject constructor(
                         fos.close()
 
                         // Share the file
-                        val authority = BuildConfig.APPLICATION_ID + ".fileprovider"
-                        val uri = FileProvider.getUriForFile(context, authority, soundFile)
-
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "audio/mp3"
-                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                        }
-
-                        val chooserIntent = Intent.createChooser(shareIntent, null).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        }
-
-                        context.grantUriPermission("android", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        context.startActivity(chooserIntent)
+                        fileSharingService.shareFile(soundFile, mimeType = "audio/mp3")
 
                         // Don't delete the file from cache as it is required by the content receivers of other apps.
                     }
