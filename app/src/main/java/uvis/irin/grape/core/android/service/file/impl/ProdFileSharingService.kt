@@ -1,4 +1,4 @@
-package uvis.irin.grape.core.provider.file.impl
+package uvis.irin.grape.core.android.service.file.impl
 
 import android.content.Context
 import android.content.Intent
@@ -9,7 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 import uvis.irin.grape.BuildConfig
-import uvis.irin.grape.core.provider.file.FileSharingService
+import uvis.irin.grape.core.android.service.file.FileSharingService
 
 class ProdFileSharingService @Inject constructor(
     @ApplicationContext private val context: Context,
