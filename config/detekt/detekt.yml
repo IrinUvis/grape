@@ -231,7 +231,6 @@ exceptions:
      - Exception
      - IllegalMonitorStateException
      - NullPointerException
-     - IndexOutOfBoundsException
      - RuntimeException
      - Throwable
     allowedExceptionNameRegex: '_|(ignore|expected).*'
