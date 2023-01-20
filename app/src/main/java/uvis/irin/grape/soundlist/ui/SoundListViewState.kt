@@ -1,5 +1,6 @@
 package uvis.irin.grape.soundlist.ui
 
+import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.soundlist.ui.model.UiCategory
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
@@ -30,20 +31,19 @@ sealed class SoundListViewState(
             sounds = sounds,
         )
 
-        data class DownloadingError(
+        data class Error(
             override val category: UiCategory,
             override val sounds: List<UiSound>,
-            val errorMessage: String,
+            val errorMessage: UiText,
         ) : SoundsLoaded(
             category = category,
             sounds = sounds,
         )
     }
 
-
     data class LoadingSoundsError(
         override val category: UiCategory,
-        val errorMessage: String,
+        val errorMessage: UiText,
     ) : SoundListViewState(
         category = category,
         type = SoundListViewStateType.LoadingSoundsError

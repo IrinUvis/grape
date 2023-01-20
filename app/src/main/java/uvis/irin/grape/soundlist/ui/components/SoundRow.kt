@@ -24,8 +24,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import uvis.irin.grape.R
+import uvis.irin.grape.core.constants.extraSmallPadding
 import uvis.irin.grape.core.ui.components.MarqueeText
 import uvis.irin.grape.soundlist.ui.model.UiSound
+
+private const val FAVOURITE_ANIMATION_DURATION = 250
+private const val FAVOURITE_KEYFRAME_MILLIS_1 = 0
+private const val FAVOURITE_KEYFRAME_MILLIS_2 = 15
+private const val FAVOURITE_KEYFRAME_MILLIS_3 = 75
+private const val FAVOURITE_KEYFRAME_MILLIS_4 = 150
+private val FAVOURITE_KEYFRAME_SIZE_1 = 24.dp
+private val FAVOURITE_KEYFRAME_SIZE_2 = 26.dp
+private val FAVOURITE_KEYFRAME_SIZE_3 = 30.dp
+private val FAVOURITE_KEYFRAME_SIZE_4 = 28.dp
+
+private val FAVOURITE_ICON_SIZE_TOGGLED_OFF = 24.dp
+private val FAVOURITE_ICON_SIZE_TOGGLED_ON = 25.dp
+
 
 @Composable
 fun SoundRow(
@@ -36,13 +51,13 @@ fun SoundRow(
     onShareButtonClicked: (UiSound) -> Unit,
 ) {
     Row(
-        modifier = modifier.padding(vertical = 4.dp),
+        modifier = modifier.padding(vertical = extraSmallPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FilledTonalButton(
             modifier = modifier
                 .weight(1f)
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = extraSmallPadding),
             onClick = { onSoundButtonClicked(sound) },
         ) {
             MarqueeText(
@@ -57,14 +72,18 @@ fun SoundRow(
             onCheckedChange = { onFavouriteButtonClicked(sound) },
         ) {
             val size by animateDpAsState(
-                targetValue = if (sound.isFavourite) 25.dp else 24.dp,
+                targetValue = if (sound.isFavourite) {
+                    FAVOURITE_ICON_SIZE_TOGGLED_ON
+                } else {
+                    FAVOURITE_ICON_SIZE_TOGGLED_OFF
+                },
                 animationSpec = keyframes {
-                    durationMillis = 250
+                    durationMillis = FAVOURITE_ANIMATION_DURATION
 
-                    24.dp at 0 with LinearOutSlowInEasing
-                    26.dp at 15 with FastOutLinearInEasing
-                    30.dp at 75
-                    28.dp at 150
+                    FAVOURITE_KEYFRAME_SIZE_1 at FAVOURITE_KEYFRAME_MILLIS_1 with LinearOutSlowInEasing
+                    FAVOURITE_KEYFRAME_SIZE_2 at FAVOURITE_KEYFRAME_MILLIS_2 with FastOutLinearInEasing
+                    FAVOURITE_KEYFRAME_SIZE_3 at FAVOURITE_KEYFRAME_MILLIS_3
+                    FAVOURITE_KEYFRAME_SIZE_4 at FAVOURITE_KEYFRAME_MILLIS_4
                 }
             )
 

@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import uvis.irin.grape.R
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
 import uvis.irin.grape.core.android.service.file.FileWritingService
+import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
@@ -51,15 +53,21 @@ class SoundListViewModel @Inject constructor(
                     category = _viewState.value.category,
                     sounds = result.sounds.map { it.toUiSound() }
                 )
-                is FetchSoundsForPathResult.Failure -> SoundListViewState.LoadingSoundsError(
-                    category = _viewState.value.category,
-                    errorMessage = when (result) {
-                        is FetchSoundsForPathResult.Failure.NoNetwork -> "NoNetwork"
-                        is FetchSoundsForPathResult.Failure.ExceededFreeTier -> "ExceededFreeTier"
-                        is FetchSoundsForPathResult.Failure.Unexpected -> "Unexpected"
-                        is FetchSoundsForPathResult.Failure.Unknown -> "Unknown"
-                    }
-                )
+                is FetchSoundsForPathResult.Failure -> {
+                    SoundListViewState.LoadingSoundsError(
+                        category = _viewState.value.category,
+                        errorMessage = when (result) {
+                            FetchSoundsForPathResult.Failure.NoNetwork ->
+                                UiText.ResourceText(R.string.networkErrorMessage)
+                            FetchSoundsForPathResult.Failure.ExceededFreeTier ->
+                                UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
+                            FetchSoundsForPathResult.Failure.Unexpected ->
+                                UiText.ResourceText(R.string.unexpectedErrorMessage)
+                            FetchSoundsForPathResult.Failure.Unknown ->
+                                UiText.ResourceText(R.string.unknownErrorMessage)
+                        }
+                    )
+                }
             }
         }
     }
@@ -77,22 +85,27 @@ class SoundListViewModel @Inject constructor(
                             fileWritingService.writeFile(sound.path, bytes)
                         }
                         is FetchByteArrayForPathResult.Failure -> {
-                            _viewState.value = SoundListViewState.SoundsLoaded.DownloadingError(
-                                category = _viewState.value.category,
+                            _viewState.value = SoundListViewState.SoundsLoaded.Error(
+                                category = state.category,
                                 sounds = state.sounds,
                                 errorMessage = when (result) {
-                                    is FetchByteArrayForPathResult.Failure.NoNetwork -> "NoNetwork"
-                                    is FetchByteArrayForPathResult.Failure.ExceededFreeTier -> "ExceededFreeTier"
-                                    is FetchByteArrayForPathResult.Failure.TooLargeFile -> "TooLargeFile"
-                                    is FetchByteArrayForPathResult.Failure.Unexpected -> "Unexpected"
-                                    is FetchByteArrayForPathResult.Failure.Unknown -> "Unknown"
+                                    FetchByteArrayForPathResult.Failure.NoNetwork ->
+                                        UiText.ResourceText(R.string.networkErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.ExceededFreeTier ->
+                                        UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.TooLargeFile ->
+                                        UiText.ResourceText(R.string.tooLargeFileErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.Unexpected ->
+                                        UiText.ResourceText(R.string.unexpectedErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.Unknown ->
+                                        UiText.ResourceText(R.string.unknownErrorMessage)
                                 }
                             )
                         }
                     }
                 }
 
-                fileReadingService.readFile(sound.path)?.let {soundFile ->
+                fileReadingService.readFile(sound.path)?.let { soundFile ->
                     mediaPlayer.reset()
                     val fis = FileInputStream(soundFile)
                     mediaPlayer.setDataSource(fis.fd)
@@ -133,15 +146,20 @@ class SoundListViewModel @Inject constructor(
                             fileWritingService.writeFile(sound.path, bytes)
                         }
                         is FetchByteArrayForPathResult.Failure -> {
-                            _viewState.value = SoundListViewState.SoundsLoaded.DownloadingError(
-                                category = _viewState.value.category,
+                            _viewState.value = SoundListViewState.SoundsLoaded.Error(
+                                category = state.category,
                                 sounds = state.sounds,
                                 errorMessage = when (result) {
-                                    is FetchByteArrayForPathResult.Failure.NoNetwork -> "NoNetwork"
-                                    is FetchByteArrayForPathResult.Failure.ExceededFreeTier -> "ExceededFreeTier"
-                                    is FetchByteArrayForPathResult.Failure.TooLargeFile -> "TooLargeFile"
-                                    is FetchByteArrayForPathResult.Failure.Unexpected -> "Unexpected"
-                                    is FetchByteArrayForPathResult.Failure.Unknown -> "Unknown"
+                                    FetchByteArrayForPathResult.Failure.NoNetwork ->
+                                        UiText.ResourceText(R.string.networkErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.ExceededFreeTier ->
+                                        UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.TooLargeFile ->
+                                        UiText.ResourceText(R.string.tooLargeFileErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.Unexpected ->
+                                        UiText.ResourceText(R.string.unexpectedErrorMessage)
+                                    FetchByteArrayForPathResult.Failure.Unknown ->
+                                        UiText.ResourceText(R.string.unknownErrorMessage)
                                 }
                             )
                         }
@@ -151,6 +169,17 @@ class SoundListViewModel @Inject constructor(
                 fileReadingService.readFile(sound.path)?.let { soundFile ->
                     fileSharingService.shareFile(soundFile, mimeType = "audio/mp3")
                 }
+            }
+        }
+    }
+
+    fun resetToActiveSoundsLoaded() {
+        viewModelScope.launch {
+            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
+                _viewState.value = SoundListViewState.SoundsLoaded.Active(
+                    category = state.category,
+                    sounds = state.sounds,
+                )
             }
         }
     }

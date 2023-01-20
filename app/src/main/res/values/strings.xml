@@ -3,4 +3,9 @@
     <string name="navigationIconContentDescription">Navigate to previous screen button</string>
     <string name="favouriteSoundToggleButtonContentDescription">Toggle favourite sound button</string>
     <string name="shareSoundButtonContentDescription">Share sound button</string>
+    <string name="networkErrorMessage">A network error has occurred while loading the sound</string>
+    <string name="exceededFreeTierErrorMessage">Can\'t load any more sounds this month</string>
+    <string name="tooLargeFileErrorMessage">The sound is too large to be downloaded</string>
+    <string name="unexpectedErrorMessage">An unexpected error has occurred</string>
+    <string name="unknownErrorMessage">An unknown error has occurred</string>
 </resources>

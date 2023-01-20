@@ -1,5 +1,6 @@
 package uvis.irin.grape.soundlist.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -7,5 +8,5 @@ import androidx.compose.ui.Modifier
 fun LoadingContent(
     modifier: Modifier = Modifier,
 ) {
-
+    Box(modifier)
 }
