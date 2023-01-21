@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.constants.smallPadding
+import uvis.irin.grape.core.ui.components.GrapeSnackbar
 import uvis.irin.grape.core.ui.helpers.getString
 import uvis.irin.grape.soundlist.ui.components.LoadingContent
 import uvis.irin.grape.soundlist.ui.components.LoadingErrorContent
@@ -47,7 +48,11 @@ fun SoundListContent(
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { snackbarData ->
+                GrapeSnackbar(snackbarData = snackbarData)
+            }
+        }
     ) { paddingValues ->
         Crossfade(
             modifier = Modifier
@@ -71,7 +76,8 @@ fun SoundListContent(
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         message = state.errorMessage.getString(context),
-                                        duration = SnackbarDuration.Short
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Long
                                     )
                                     onErrorSnackbarDismissed()
                                 }
@@ -88,9 +94,9 @@ fun SoundListContent(
                     }
                 }
                 SoundListViewStateType.LoadingSoundsError -> {
-                    (viewState as? SoundListViewState.LoadingSoundsError)?.let {
+                    (viewState as? SoundListViewState.LoadingSoundsError)?.let { state ->
                         LoadingErrorContent(
-                            errorMessage = "sth",
+                            errorMessage = state.errorMessage.getString(),
                         )
                     }
                 }

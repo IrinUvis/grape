@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.FileInputStream
 import javax.inject.Inject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +35,10 @@ class SoundListViewModel @Inject constructor(
     private val fileReadingService: FileReadingService,
 ) : ViewModel() {
 
+    companion object {
+        private const val LOADING_DELAY = 1500L
+    }
+
     private val mediaPlayer = MediaPlayer()
 
     private val category = UiCategory(
@@ -46,29 +53,39 @@ class SoundListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val path = _viewState.value.category.absolutePath
+            val delayDeferred = async {
+                delay(LOADING_DELAY)
+            }
 
-            _viewState.value = when (val result = fetchSoundsForPathUseCase(path)) {
-                is FetchSoundsForPathResult.Success -> SoundListViewState.SoundsLoaded.Active(
-                    category = _viewState.value.category,
-                    sounds = result.sounds.map { it.toUiSound() }
-                )
-                is FetchSoundsForPathResult.Failure -> {
-                    SoundListViewState.LoadingSoundsError(
+            val loadingDeferred = async {
+                val path = _viewState.value.category.absolutePath
+
+                when (val result = fetchSoundsForPathUseCase(path)) {
+                    is FetchSoundsForPathResult.Success -> SoundListViewState.SoundsLoaded.Active(
                         category = _viewState.value.category,
-                        errorMessage = when (result) {
-                            FetchSoundsForPathResult.Failure.NoNetwork ->
-                                UiText.ResourceText(R.string.networkErrorMessage)
-                            FetchSoundsForPathResult.Failure.ExceededFreeTier ->
-                                UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
-                            FetchSoundsForPathResult.Failure.Unexpected ->
-                                UiText.ResourceText(R.string.unexpectedErrorMessage)
-                            FetchSoundsForPathResult.Failure.Unknown ->
-                                UiText.ResourceText(R.string.unknownErrorMessage)
-                        }
+                        sounds = result.sounds.map { it.toUiSound() }
                     )
+                    is FetchSoundsForPathResult.Failure -> {
+                        SoundListViewState.LoadingSoundsError(
+                            category = _viewState.value.category,
+                            errorMessage = when (result) {
+                                FetchSoundsForPathResult.Failure.NoNetwork ->
+                                    UiText.ResourceText(R.string.networkErrorMessage)
+                                FetchSoundsForPathResult.Failure.ExceededFreeTier ->
+                                    UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
+                                FetchSoundsForPathResult.Failure.Unexpected ->
+                                    UiText.ResourceText(R.string.unexpectedErrorMessage)
+                                FetchSoundsForPathResult.Failure.Unknown ->
+                                    UiText.ResourceText(R.string.unknownErrorMessage)
+                            }
+                        )
+                    }
                 }
             }
+
+            val list = awaitAll(delayDeferred, loadingDeferred)
+
+            _viewState.value = list.last() as SoundListViewState
         }
     }
 
