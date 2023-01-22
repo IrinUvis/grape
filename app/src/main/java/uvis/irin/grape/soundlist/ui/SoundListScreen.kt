@@ -13,9 +13,9 @@ fun SoundListScreen(
     SoundListContent(
         viewState = viewState.value,
         onNavigationIconClicked = { },
-        onDownloadForOfflineIconClicked = viewModel::downloadSoundsAndSaveThemLocally,
+        onDownloadForOfflineIconClicked = viewModel::downloadOrRemoveAllSounds,
         onSettingsIconClicked = { },
-        onDownloadSoundClicked = viewModel::downloadAndSaveSoundLocally,
+        onDownloadSoundClicked = viewModel::downloadOrRemoveSound,
         onSoundButtonClicked = viewModel::playSound,
         onFavouriteButtonClicked = viewModel::toggleFavouriteSound,
         onShareButtonClicked = viewModel::shareSound,

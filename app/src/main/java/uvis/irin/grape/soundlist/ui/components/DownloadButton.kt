@@ -27,6 +27,7 @@ fun DownloadButton(
 
     IconButton(
         modifier = modifier,
+        enabled = downloadState != DownloadState.Downloading,
         onClick = onClick,
     ) {
         AnimatedContent(targetState = downloadIcon) {icon ->
