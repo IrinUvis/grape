@@ -24,8 +24,31 @@ class ProdFileReadingService @Inject constructor(
             }
         }
 
-        val soundFile = File(dir, fileName)
+        val file = File(dir, fileName)
 
-        return if (soundFile.exists()) soundFile else null
+        return if (file.exists()) file else null
+    }
+
+    override fun readAllFilesInDirectory(path: String): List<File> {
+        val splitPathParts = path.split('/')
+
+        var dir = context.filesDir
+
+        for (subDir in splitPathParts) {
+            dir = File(dir, subDir)
+            if (!dir.exists()) {
+                return emptyList()
+            }
+        }
+
+        val children = dir.listFiles() ?: emptyArray()
+
+        return children.filter { it.isFile }
+    }
+
+    override fun fileExists(path: String): Boolean {
+        val file = readFile(path)
+
+        return file != null
     }
 }

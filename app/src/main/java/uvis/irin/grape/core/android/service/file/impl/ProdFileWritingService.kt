@@ -11,7 +11,7 @@ class ProdFileWritingService @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : FileWritingService {
 
-    override fun writeFile(path: String, bytes: ByteArray) {
+    override fun writeFileToInternalStorage(path: String, bytes: ByteArray): File {
         val splitPathParts = path.split('/').drop(1)
         val fileName = splitPathParts.last()
         val subDirs = splitPathParts.dropLast(1)
@@ -29,5 +29,17 @@ class ProdFileWritingService @Inject constructor(
         val fos = FileOutputStream(soundFile)
         fos.write(bytes)
         fos.close()
+
+        return soundFile
+    }
+
+    override fun writeFileToCachedStorage(name: String, bytes: ByteArray): File {
+        val file = File(context.cacheDir, name)
+
+        val fos = FileOutputStream(file)
+        fos.write(bytes)
+        fos.close()
+
+        return file
     }
 }

@@ -5,4 +5,8 @@ import java.io.File
 interface FileReadingService {
 
     fun readFile(path: String): File?
+
+    fun readAllFilesInDirectory(path: String): List<File>
+
+    fun fileExists(path: String): Boolean
 }

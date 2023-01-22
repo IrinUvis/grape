@@ -1,18 +1,16 @@
 package uvis.irin.grape.soundlist.ui.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import uvis.irin.grape.R
+import uvis.irin.grape.core.ui.components.AppBarTitle
+import uvis.irin.grape.core.ui.components.NavigateBackButton
+import uvis.irin.grape.soundlist.ui.model.DownloadState
 import uvis.irin.grape.soundlist.ui.model.UiCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,27 +18,35 @@ import uvis.irin.grape.soundlist.ui.model.UiCategory
 fun SoundListTopAppBar(
     modifier: Modifier = Modifier,
     category: UiCategory,
-    onNavigationIconPressed: () -> Unit,
+    soundsLoaded: Boolean,
+    soundsDownloadState: DownloadState,
+    onNavigationIconClicked: () -> Unit,
+    onDownloadForOfflineIconClicked: () -> Unit,
+    onSettingsIconClicked: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     MediumTopAppBar(
         modifier = modifier,
-        title = {
-            Text(
-                text = category.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        title = { AppBarTitle(text = category.name) },
+        navigationIcon = {
+            NavigateBackButton(
+                onClick = onNavigationIconClicked,
+                contentDescription = stringResource(R.string.navigationIconContentDescription),
             )
         },
-        navigationIcon = {
-            IconButton(
-                onClick = onNavigationIconPressed,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = stringResource(R.string.navigationIconContentDescription),
+        actions = {
+            AnimatedVisibility(visible = soundsLoaded) {
+                DownloadButton(
+                    downloadState = soundsDownloadState,
+                    onClick = onDownloadForOfflineIconClicked,
+                    contentDescription = stringResource(R.string.downloadCategorySoundsButtonContentDescription),
                 )
             }
+
+            SettingsButton(
+                onClick = onSettingsIconClicked,
+                contentDescription = stringResource(R.string.downloadCategorySoundsButtonContentDescription),
+            )
         },
         scrollBehavior = scrollBehavior,
     )

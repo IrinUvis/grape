@@ -4,9 +4,11 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import uvis.irin.grape.core.android.service.file.FileDeletingService
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
 import uvis.irin.grape.core.android.service.file.FileWritingService
+import uvis.irin.grape.core.android.service.file.impl.ProdFileDeletingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileReadingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileSharingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileWritingService
@@ -29,4 +31,9 @@ abstract class AndroidStuffModule {
     abstract fun bindFileReadingService(
         fileReadingService: ProdFileReadingService
     ): FileReadingService
+
+    @Binds
+    abstract fun bindFileDeletingService(
+        fileDeletingService: ProdFileDeletingService
+    ): FileDeletingService
 }

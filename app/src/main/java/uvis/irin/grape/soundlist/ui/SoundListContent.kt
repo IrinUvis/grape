@@ -23,14 +23,18 @@ import uvis.irin.grape.soundlist.ui.components.LoadingContent
 import uvis.irin.grape.soundlist.ui.components.LoadingErrorContent
 import uvis.irin.grape.soundlist.ui.components.SoundListTopAppBar
 import uvis.irin.grape.soundlist.ui.components.SoundsLoadedActiveContent
+import uvis.irin.grape.soundlist.ui.model.DownloadState
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
-    onNavigationIconPressed: () -> Unit,
+    onNavigationIconClicked: () -> Unit,
+    onDownloadForOfflineIconClicked: () -> Unit,
+    onSettingsIconClicked: () -> Unit,
     onSoundButtonClicked: (UiSound) -> Unit,
+    onDownloadSoundClicked: (UiSound) -> Unit,
     onFavouriteButtonClicked: (UiSound) -> Unit,
     onShareButtonClicked: (UiSound) -> Unit,
     onErrorSnackbarDismissed: () -> Unit,
@@ -44,7 +48,12 @@ fun SoundListContent(
         topBar = {
             SoundListTopAppBar(
                 category = viewState.category,
-                onNavigationIconPressed = onNavigationIconPressed,
+                soundsLoaded = viewState is SoundListViewState.SoundsLoaded,
+                soundsDownloadState = (viewState as? SoundListViewState.SoundsLoaded)?.soundsDownloadState
+                    ?: DownloadState.NotDownloaded,
+                onNavigationIconClicked = onNavigationIconClicked,
+                onDownloadForOfflineIconClicked = onDownloadForOfflineIconClicked,
+                onSettingsIconClicked = onSettingsIconClicked,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -88,6 +97,7 @@ fun SoundListContent(
                             sounds = state.sounds,
                             scrollBehavior = scrollBehavior,
                             onSoundButtonClicked = onSoundButtonClicked,
+                            onDownloadSoundClicked = onDownloadSoundClicked,
                             onFavouriteButtonClicked = onFavouriteButtonClicked,
                             onShareButtonClicked = onShareButtonClicked,
                         )

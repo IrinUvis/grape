@@ -18,6 +18,7 @@ fun SoundsLoadedActiveContent(
     sounds: List<UiSound>,
     scrollBehavior: TopAppBarScrollBehavior,
     onSoundButtonClicked: (UiSound) -> Unit,
+    onDownloadSoundClicked: (UiSound) -> Unit,
     onFavouriteButtonClicked: (UiSound) -> Unit,
     onShareButtonClicked: (UiSound) -> Unit,
 ) {
@@ -29,6 +30,7 @@ fun SoundsLoadedActiveContent(
                 SoundRow(
                     sound = sound,
                     onSoundButtonClicked = onSoundButtonClicked,
+                    onDownloadSoundClicked = onDownloadSoundClicked,
                     onFavouriteButtonClicked = onFavouriteButtonClicked,
                     onShareButtonClicked = onShareButtonClicked,
                 )

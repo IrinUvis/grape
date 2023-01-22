@@ -1,8 +1,8 @@
 package uvis.irin.grape.soundlist.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,22 +18,20 @@ fun LoadingErrorContent(
     modifier: Modifier = Modifier,
     errorMessage: String,
 ) {
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(errorImagePainterResources.random()),
-                contentDescription = null,
-            )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(errorImagePainterResources.random()),
+            contentDescription = null,
+        )
 
-            VerticalSpacer(height = mediumPadding)
+        VerticalSpacer(height = mediumPadding)
 
-            Text(
-                text = errorMessage,
-                textAlign = TextAlign.Center,
-            )
-        }
+        Text(
+            text = errorMessage,
+            textAlign = TextAlign.Center,
+        )
     }
 }
