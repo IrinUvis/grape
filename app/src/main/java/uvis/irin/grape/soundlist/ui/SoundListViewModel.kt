@@ -10,6 +10,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uvis.irin.grape.R
 import uvis.irin.grape.core.android.service.file.FileDeletingService
@@ -49,29 +50,19 @@ class SoundListViewModel @Inject constructor(
     ) // TOA did sth cool with navigation args
 
     private val _viewState: MutableStateFlow<SoundListViewState> = MutableStateFlow(
-        SoundListViewState.LoadingSounds(category)
+        SoundListViewState(
+            category = category,
+            soundsLoadingState = SoundsLoadingState.Loading,
+            sounds = null,
+            soundsDownloadState = DownloadState.NotDownloaded,
+            errorMessage = null
+        )
     )
     val viewState: StateFlow<SoundListViewState> = _viewState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val path = _viewState.value.category.absolutePath
-
-            _viewState.value = when (val result = fetchSoundsForPathUseCase(path)) {
-                is FetchSoundsForPathResult.Success -> {
-                    val sounds = soundsForFetchSoundsForPathSuccess(result)
-
-                    deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds = sounds)
-
-                    viewStateForInitiallyLoadedSounds(sounds)
-                }
-                is FetchSoundsForPathResult.Failure -> {
-                    viewStateForFetchSoundsForPathFailure(
-                        previousState = _viewState.value,
-                        result = result
-                    )
-                }
-            }
+            loadSounds()
         }
     }
 
@@ -85,33 +76,40 @@ class SoundListViewModel @Inject constructor(
                 removeSoundFile(sound)
             }
 
-            _viewState.value = viewStateWithUpdatedSoundsDownloadState(_viewState.value)
+            _viewState.update {
+                viewStateWithUpdatedSoundsDownloadState()
+            }
         }
     }
 
     fun downloadOrRemoveAllSounds() {
         viewModelScope.launch {
-            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-                if (state.soundsDownloadState == DownloadState.NotDownloaded) {
-                    _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                        category = state.category,
-                        sounds = state.sounds,
+            if (_viewState.value.soundsDownloadState == DownloadState.NotDownloaded) {
+                _viewState.update {
+                    it.copy(
                         soundsDownloadState = DownloadState.Downloading,
                     )
+                }
 
+                _viewState.value.sounds?.let { sounds ->
                     val nonDownloadedSounds =
-                        state.sounds.filter { !fileReadingService.fileExists(it.path) }
+                        sounds.filter { !fileReadingService.fileExists(it.path) }
 
                     nonDownloadedSounds.map { downloadSoundAndSaveIt(it) }
+                }
 
-                    _viewState.value = viewStateWithUpdatedSoundsDownloadState(_viewState.value)
-                } else {
-                    val downloadedSounds =
-                        state.sounds.filter { fileReadingService.fileExists(it.path) }
+                _viewState.update {
+                    viewStateWithUpdatedSoundsDownloadState()
+                }
+            } else {
+                _viewState.value.sounds?.let { sounds ->
+                    val downloadedSounds = sounds.filter { fileReadingService.fileExists(it.path) }
 
                     downloadedSounds.map { removeSoundFile(it) }
+                }
 
-                    _viewState.value = viewStateWithUpdatedSoundsDownloadState(_viewState.value)
+                _viewState.update {
+                    viewStateWithUpdatedSoundsDownloadState()
                 }
             }
         }
@@ -119,132 +117,163 @@ class SoundListViewModel @Inject constructor(
 
     fun playSound(sound: UiSound) {
         viewModelScope.launch {
-            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-                var fileToPlay = sound.localFile
-                if (fileToPlay == null) {
-                    when (val result = fetchByteArrayForPathUseCase(sound.path)) {
-                        is FetchByteArrayForPathResult.Success -> {
-                            fileToPlay = clearCacheAndCreateCachedFile(sound, result.bytes)
-                        }
-                        is FetchByteArrayForPathResult.Failure -> {
-                            _viewState.value = viewStateForFetchByteArrayForPathFailure(
-                                previousState = state,
+            var fileToPlay = sound.localFile
+            if (fileToPlay == null) {
+                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                    is FetchByteArrayForPathResult.Success -> {
+                        fileToPlay = clearCacheAndCreateCachedFile(sound, result.bytes)
+                    }
+                    is FetchByteArrayForPathResult.Failure -> {
+                        _viewState.update {
+                            viewStateForFetchByteArrayForPathFailure(
                                 result = result,
                             )
                         }
                     }
                 }
-
-                fileToPlay?.let { playViaMediaPlayer(fileToPlay) }
             }
+
+            fileToPlay?.let { playViaMediaPlayer(fileToPlay) }
         }
     }
 
     fun toggleFavouriteSound(sound: UiSound) {
-        (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-            val soundIndex = state.sounds.indexOf(sound)
+        _viewState.value.sounds?.let { sounds ->
+            val soundIndex = sounds.indexOf(sound)
             val newSound = sound.copy(
                 isFavourite = !sound.isFavourite
             )
 
-            _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                category = state.category,
-                sounds = state.sounds.withItemAtIndex(newSound, soundIndex),
-                soundsDownloadState = state.soundsDownloadState,
-            )
-        }
-    }
-
-    fun shareSound(sound: UiSound) {
-        viewModelScope.launch {
-            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-                var fileToShare = sound.localFile
-                if (fileToShare == null) {
-                    when (val result = fetchByteArrayForPathUseCase(sound.path)) {
-                        is FetchByteArrayForPathResult.Success -> {
-                            fileToShare = clearCacheAndCreateCachedFile(sound, result.bytes)
-                        }
-                        is FetchByteArrayForPathResult.Failure -> {
-                            _viewState.value = viewStateForFetchByteArrayForPathFailure(
-                                previousState = state,
-                                result = result,
-                            )
-                        }
-                    }
-                }
-
-                fileToShare?.let {
-                    fileSharingService.shareFile(
-                        fileToShare,
-                        mimeType = MP3_MIME_TYPE
-                    )
-                }
-            }
-        }
-    }
-
-    fun resetToActiveSoundsLoaded() {
-        viewModelScope.launch {
-            (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-                _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                    category = state.category,
-                    sounds = state.sounds,
-                    soundsDownloadState = state.soundsDownloadState
+            _viewState.update {
+                it.copy(
+                    sounds = sounds.withItemAtIndex(newSound, soundIndex),
                 )
             }
         }
     }
 
+    fun shareSound(sound: UiSound) {
+        viewModelScope.launch {
+            var fileToShare = sound.localFile
+            if (fileToShare == null) {
+                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                    is FetchByteArrayForPathResult.Success -> {
+                        fileToShare = clearCacheAndCreateCachedFile(sound, result.bytes)
+                    }
+                    is FetchByteArrayForPathResult.Failure -> {
+                        _viewState.update {
+                            viewStateForFetchByteArrayForPathFailure(
+                                result = result,
+                            )
+                        }
+                    }
+                }
+            }
+
+            fileToShare?.let {
+                fileSharingService.shareFile(
+                    fileToShare,
+                    mimeType = MP3_MIME_TYPE
+                )
+            }
+        }
+    }
+
+    fun retryLoadingSounds() {
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    soundsLoadingState = SoundsLoadingState.Loading,
+                    errorMessage = null
+                )
+            }
+
+            loadSounds()
+        }
+    }
+
+    fun clearErrorMessage() {
+        _viewState.update {
+            it.copy(
+                errorMessage = null
+            )
+        }
+    }
+
+    private suspend fun loadSounds() {
+        val path = _viewState.value.category.absolutePath
+
+        val newViewState = when (val result = fetchSoundsForPathUseCase(path)) {
+            is FetchSoundsForPathResult.Success -> {
+                val sounds = soundsForFetchSoundsForPathSuccess(result)
+
+                deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds = sounds)
+
+                viewStateForInitiallyLoadedSounds(sounds)
+            }
+            is FetchSoundsForPathResult.Failure -> {
+                viewStateForFetchSoundsForPathFailure(
+                    previousState = _viewState.value,
+                    result = result
+                )
+            }
+        }
+
+        _viewState.update {
+            newViewState
+        }
+    }
+
     private suspend fun downloadSoundAndSaveIt(sound: UiSound) {
-        (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-            val soundIndex = state.sounds.indexOf(sound)
-            val downloadingSound = sound.copy(
-                downloadState = DownloadState.Downloading,
-            )
+        val downloadingSound = sound.copy(
+            downloadState = DownloadState.Downloading,
+        )
+        _viewState.value.sounds?.let { sounds ->
+            val soundIndex = sounds.indexOf(sound)
 
-            _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                category = state.category,
-                sounds = state.sounds.withItemAtIndex(downloadingSound, soundIndex),
-                soundsDownloadState = state.soundsDownloadState,
-            )
+            _viewState.update {
+                it.copy(
+                    sounds = sounds.withItemAtIndex(downloadingSound, soundIndex),
+                )
+            }
+        }
 
-            when (val result = fetchByteArrayForPathUseCase(sound.path)) {
-                is FetchByteArrayForPathResult.Success -> {
-                    val file =
-                        fileWritingService.writeFileToInternalStorage(sound.path, result.bytes)
+        when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+            is FetchByteArrayForPathResult.Success -> {
+                val file =
+                    fileWritingService.writeFileToInternalStorage(sound.path, result.bytes)
 
+                _viewState.value.sounds?.let { sounds ->
+                    val soundIndex = sounds.indexOf(downloadingSound)
                     val downloadedSound = sound.copy(
                         downloadState = DownloadState.Downloaded,
                         localFile = file
                     )
 
-                    (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { newState ->
-                        _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                            category = newState.category,
-                            sounds = newState.sounds.withItemAtIndex(
+                    _viewState.update {
+                        it.copy(
+                            sounds = sounds.withItemAtIndex(
                                 downloadedSound,
                                 soundIndex
-                            ),
-                            soundsDownloadState = newState.soundsDownloadState,
+                            )
                         )
                     }
-
-
                 }
-                is FetchByteArrayForPathResult.Failure -> {
+            }
+            is FetchByteArrayForPathResult.Failure -> {
+                _viewState.value.sounds?.let { sounds ->
+                    val soundIndex = sounds.indexOf(downloadingSound)
                     val soundWithErrorDownloading = sound.copy(
                         downloadState = DownloadState.ErrorDownloading
                     )
 
-                    (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { newState ->
-                        _viewState.value = SoundListViewState.SoundsLoaded.Error(
-                            category = state.category,
-                            sounds = newState.sounds.withItemAtIndex(
+                    _viewState.update {
+                        it.copy(
+                            sounds = sounds.withItemAtIndex(
                                 soundWithErrorDownloading,
                                 soundIndex
                             ),
-                            soundsDownloadState = state.soundsDownloadState,
-                            errorMessage = errorMessageForFetchByteArrayForPathFailure(result)
+                            errorMessage = errorMessageForFetchByteArrayForPathFailure(result),
                         )
                     }
                 }
@@ -253,24 +282,24 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun removeSoundFile(sound: UiSound) {
-        (_viewState.value as? SoundListViewState.SoundsLoaded)?.let { state ->
-            val file = fileReadingService.readFile(sound.path)
+        val file = fileReadingService.readFile(sound.path)
 
-            if (file != null) {
-                fileDeletingService.deleteFile(file)
-            }
+        if (file != null) {
+            fileDeletingService.deleteFile(file)
+        }
 
-            val soundIndex = state.sounds.indexOf(sound)
+        _viewState.value.sounds?.let { sounds ->
+            val soundIndex = sounds.indexOf(sound)
             val notDownloadedSound = sound.copy(
                 downloadState = DownloadState.NotDownloaded,
                 localFile = null,
             )
 
-            _viewState.value = SoundListViewState.SoundsLoaded.Active(
-                category = state.category,
-                sounds = state.sounds.withItemAtIndex(notDownloadedSound, soundIndex),
-                soundsDownloadState = state.soundsDownloadState,
-            )
+            _viewState.update {
+                it.copy(
+                    sounds = sounds.withItemAtIndex(notDownloadedSound, soundIndex),
+                )
+            }
         }
     }
 
@@ -301,18 +330,15 @@ class SoundListViewModel @Inject constructor(
         return fileWritingService.writeFileToCachedStorage(sound.fileName, bytes)
     }
 
-    private fun viewStateWithUpdatedSoundsDownloadState(viewState: SoundListViewState): SoundListViewState {
-        return (viewState as? SoundListViewState.SoundsLoaded)?.let { state ->
-            SoundListViewState.SoundsLoaded.Active(
-                category = state.category,
-                sounds = state.sounds,
-                soundsDownloadState = soundsDownloadStateForState(state),
+    private fun viewStateWithUpdatedSoundsDownloadState(): SoundListViewState {
+        return _viewState.value.sounds?.let { sounds ->
+            _viewState.value.copy(
+                soundsDownloadState = soundsDownloadStateForSounds(sounds),
             )
         } ?: _viewState.value
     }
 
-    private fun soundsDownloadStateForState(state: SoundListViewState.SoundsLoaded): DownloadState {
-        val sounds = state.sounds
+    private fun soundsDownloadStateForSounds(sounds: List<UiSound>): DownloadState {
         val allDownloaded = sounds.all { it.downloadState == DownloadState.Downloaded }
 
         return if (allDownloaded) {
@@ -339,13 +365,13 @@ class SoundListViewModel @Inject constructor(
 
     private fun viewStateForInitiallyLoadedSounds(sounds: List<UiSound>): SoundListViewState {
         val allDownloaded = sounds.none { it.downloadState == DownloadState.NotDownloaded }
-        val categoryDownloadState =
+        val soundsDownloadState =
             if (allDownloaded) DownloadState.Downloaded else DownloadState.NotDownloaded
 
-        return SoundListViewState.SoundsLoaded.Active(
-            category = _viewState.value.category,
+        return _viewState.value.copy(
             sounds = sounds,
-            soundsDownloadState = categoryDownloadState
+            soundsLoadingState = SoundsLoadingState.Loaded,
+            soundsDownloadState = soundsDownloadState,
         )
     }
 
@@ -353,8 +379,9 @@ class SoundListViewModel @Inject constructor(
         previousState: SoundListViewState,
         result: FetchSoundsForPathResult.Failure
     ): SoundListViewState {
-        return SoundListViewState.LoadingSoundsError(
+        return _viewState.value.copy(
             category = previousState.category,
+            soundsLoadingState = SoundsLoadingState.LoadingError,
             errorMessage = errorMessageForFetchSoundsForPathFailure(result)
         )
     }
@@ -375,13 +402,10 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun viewStateForFetchByteArrayForPathFailure(
-        previousState: SoundListViewState.SoundsLoaded,
         result: FetchByteArrayForPathResult.Failure,
     ): SoundListViewState {
-        return SoundListViewState.SoundsLoaded.Error(
-            category = previousState.category,
-            sounds = previousState.sounds,
-            soundsDownloadState = previousState.soundsDownloadState,
+        return _viewState.value.copy(
+            soundsLoadingState = SoundsLoadingState.Loaded,
             errorMessage = errorMessageForFetchByteArrayForPathFailure(result)
         )
     }

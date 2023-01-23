@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import uvis.irin.grape.core.constants.bigPadding
 import uvis.irin.grape.core.constants.smallPadding
 import uvis.irin.grape.core.ui.components.GrapeSnackbar
 import uvis.irin.grape.core.ui.helpers.getString
@@ -23,7 +24,6 @@ import uvis.irin.grape.soundlist.ui.components.LoadingContent
 import uvis.irin.grape.soundlist.ui.components.LoadingErrorContent
 import uvis.irin.grape.soundlist.ui.components.SoundListTopAppBar
 import uvis.irin.grape.soundlist.ui.components.SoundsLoadedActiveContent
-import uvis.irin.grape.soundlist.ui.model.DownloadState
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +37,7 @@ fun SoundListContent(
     onDownloadSoundClicked: (UiSound) -> Unit,
     onFavouriteButtonClicked: (UiSound) -> Unit,
     onShareButtonClicked: (UiSound) -> Unit,
+    onRetryButtonClicked: () -> Unit,
     onErrorSnackbarDismissed: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -48,9 +49,8 @@ fun SoundListContent(
         topBar = {
             SoundListTopAppBar(
                 category = viewState.category,
-                soundsLoaded = viewState is SoundListViewState.SoundsLoaded,
-                soundsDownloadState = (viewState as? SoundListViewState.SoundsLoaded)?.soundsDownloadState
-                    ?: DownloadState.NotDownloaded,
+                soundsLoaded = viewState.soundsLoadingState == SoundsLoadingState.Loaded,
+                soundsDownloadState = viewState.soundsDownloadState,
                 onNavigationIconClicked = onNavigationIconClicked,
                 onDownloadForOfflineIconClicked = onDownloadForOfflineIconClicked,
                 onSettingsIconClicked = onSettingsIconClicked,
@@ -70,31 +70,29 @@ fun SoundListContent(
                     horizontal = smallPadding,
                     vertical = smallPadding,
                 ),
-            targetState = viewState.type
-        ) { stateType ->
-            when (stateType) {
-                SoundListViewStateType.Loading -> {
-                    (viewState as? SoundListViewState.LoadingSounds)?.let {
-                        LoadingContent()
-                    }
+            targetState = viewState.soundsLoadingState
+        ) { screenState ->
+            when (screenState) {
+                SoundsLoadingState.Loading -> {
+                    LoadingContent()
                 }
-                SoundListViewStateType.SoundsLoaded -> {
-                    (viewState as? SoundListViewState.SoundsLoaded)?.let { state ->
-                        LaunchedEffect(state) {
-                            if (state is SoundListViewState.SoundsLoaded.Error) {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = state.errorMessage.getString(context),
-                                        withDismissAction = true,
-                                        duration = SnackbarDuration.Long
-                                    )
-                                    onErrorSnackbarDismissed()
-                                }
+                SoundsLoadingState.Loaded -> {
+                    LaunchedEffect(viewState.errorMessage) {
+                        viewState.errorMessage?.let {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = it.getString(context),
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Long
+                                )
+                                onErrorSnackbarDismissed()
                             }
                         }
+                    }
 
+                    viewState.sounds?.let { sounds ->
                         SoundsLoadedActiveContent(
-                            sounds = state.sounds,
+                            sounds = sounds,
                             scrollBehavior = scrollBehavior,
                             onSoundButtonClicked = onSoundButtonClicked,
                             onDownloadSoundClicked = onDownloadSoundClicked,
@@ -103,10 +101,12 @@ fun SoundListContent(
                         )
                     }
                 }
-                SoundListViewStateType.LoadingSoundsError -> {
-                    (viewState as? SoundListViewState.LoadingSoundsError)?.let { state ->
+                SoundsLoadingState.LoadingError -> {
+                    viewState.errorMessage?.let {
                         LoadingErrorContent(
-                            errorMessage = state.errorMessage.getString(),
+                            modifier = Modifier.padding(bigPadding),
+                            onRetryButtonClicked = onRetryButtonClicked,
+                            errorMessage = it.getString(),
                         )
                     }
                 }

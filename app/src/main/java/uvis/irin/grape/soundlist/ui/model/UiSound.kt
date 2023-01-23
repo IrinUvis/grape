@@ -16,7 +16,7 @@ data class UiSound(
 fun DomainSound.toUiSound() = UiSound(
     fileName = this.name,
     path = this.path,
-    isFavourite = false, // TODO: Add favourites
+    isFavourite = false,
     downloadState = DownloadState.NotDownloaded,
     localFile = null,
 )

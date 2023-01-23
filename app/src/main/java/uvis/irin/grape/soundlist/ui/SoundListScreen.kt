@@ -19,6 +19,7 @@ fun SoundListScreen(
         onSoundButtonClicked = viewModel::playSound,
         onFavouriteButtonClicked = viewModel::toggleFavouriteSound,
         onShareButtonClicked = viewModel::shareSound,
-        onErrorSnackbarDismissed = viewModel::resetToActiveSoundsLoaded
+        onRetryButtonClicked = viewModel::retryLoadingSounds,
+        onErrorSnackbarDismissed = viewModel::clearErrorMessage
     )
 }
