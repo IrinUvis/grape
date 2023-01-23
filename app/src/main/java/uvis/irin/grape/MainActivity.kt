@@ -3,15 +3,14 @@ package uvis.irin.grape
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import uvis.irin.grape.categories.ui.CategoriesScreen
 import uvis.irin.grape.core.ui.theme.GrapeTheme
+import uvis.irin.grape.navigation.GrapeNavHost
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -25,10 +24,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             GrapeTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    CategoriesScreen()
+                    val navController = rememberNavController()
+
+                    GrapeNavHost(
+                        navController = navController
+                    )
                 }
             }
         }

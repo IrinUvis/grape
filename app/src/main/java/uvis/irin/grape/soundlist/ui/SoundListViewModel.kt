@@ -1,6 +1,7 @@
 package uvis.irin.grape.soundlist.ui
 
 import android.media.MediaPlayer
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +19,10 @@ import uvis.irin.grape.core.android.service.file.FileDeletingService
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
 import uvis.irin.grape.core.android.service.file.FileWritingService
+import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
+import uvis.irin.grape.navigation.SOUND_LIST_CATEGORY_PATH_ARG
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
@@ -30,6 +33,7 @@ import uvis.irin.grape.soundlist.ui.model.toUiSound
 
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val fetchSoundsForPathUseCase: FetchSoundsForPathUseCase,
     private val fetchByteArrayForPathUseCase: FetchByteArrayForPathUseCase,
     private val fileSharingService: FileSharingService,
@@ -44,14 +48,15 @@ class SoundListViewModel @Inject constructor(
 
     private val mediaPlayer = MediaPlayer()
 
-    private val category = UiCategory(
-        name = "Jail",
-        absolutePath = "sounds/01_jail"
-    ) // TOA did sth cool with navigation args
+    private val categoryPath =
+        (checkNotNull(savedStateHandle[SOUND_LIST_CATEGORY_PATH_ARG]) as String)
+            .withDashesReplacedByForwardSlashes()
 
     private val _viewState: MutableStateFlow<SoundListViewState> = MutableStateFlow(
         SoundListViewState(
-            category = category,
+            category = UiCategory(
+                path = categoryPath,
+            ),
             soundsLoadingState = SoundsLoadingState.Loading,
             sounds = null,
             soundsDownloadState = DownloadState.NotDownloaded,
@@ -201,7 +206,7 @@ class SoundListViewModel @Inject constructor(
     }
 
     private suspend fun loadSounds() {
-        val path = _viewState.value.category.absolutePath
+        val path = _viewState.value.category.path
 
         val newViewState = when (val result = fetchSoundsForPathUseCase(path)) {
             is FetchSoundsForPathResult.Success -> {
@@ -314,7 +319,7 @@ class SoundListViewModel @Inject constructor(
         val cloudSoundsNames = cloudSounds.map { it.fileName }
 
         val files =
-            fileReadingService.readAllFilesInDirectory(_viewState.value.category.absolutePath)
+            fileReadingService.readAllFilesInDirectory(_viewState.value.category.path)
 
         val filesToDelete = files.filter { !cloudSoundsNames.contains(it.name) }
 

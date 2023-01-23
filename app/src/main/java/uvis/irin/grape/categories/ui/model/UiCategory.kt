@@ -1,13 +1,22 @@
 package uvis.irin.grape.categories.ui.model
 
+import uvis.irin.grape.core.extension.capitalize
 import uvis.irin.grape.soundlist.domain.model.DomainCategory
 
 data class UiCategory(
-    val name: String,
-    val absolutePath: String,
-)
+    val path: String,
+) {
+    val name: String
+        get() = categoryPathToName(path)
+}
 
 fun DomainCategory.toUiCategory() = UiCategory(
-    name = this.name,
-    absolutePath = this.absolutePath,
+    path = this.absolutePath,
 )
+
+private fun categoryPathToName(path: String): String {
+    return path
+        .substringAfterLast('/')
+        .substringAfterLast('_')
+        .capitalize()
+}

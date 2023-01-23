@@ -24,6 +24,8 @@ ext {
             hiltNavigationCompose: "1.0.0",
             // https://developer.android.com/jetpack/androidx/releases/room
             room                 : "2.5.0",
+            // https://developer.android.com/jetpack/androidx/releases/navigation
+            navigation           : "2.5.3",
             // https://firebase.google.com/support/release-notes/android
             firebaseBom          : "31.1.1",
             // https://github.com/google/truth/releases

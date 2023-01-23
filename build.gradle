@@ -9,7 +9,7 @@ buildscript {
     ext.versionsPluginVersion = "0.29.0"
 
     // https://developer.android.com/jetpack/androidx/releases/hilt
-    ext.hiltVersion = "2.44"
+    ext.hiltVersion = "2.44.2"
 
     ext.googleServicesVersion = "4.3.14"
 
