@@ -14,4 +14,8 @@
     <string name="playSoundButtonContentDescription">Play sound button</string>
     <string name="retry">Retry</string>
     <string name="retryButtonContentDescription">Retry button</string>
+    <string name="networkAndNoDownloadedSoundsErrorMessage">A network error has occurred and you don\'t have any sounds downloaded for this category. Check your Internet connection</string>
+    <string name="exceededFreeTierAndNoDownloadedSoundsErrorMessage">Can\'t load any more sounds this month and you don\'t have any sounds downloaded for this category</string>
+    <string name="unexpectedAndNoDownloadedSoundsErrorMessage">An unexpected error has occurred and you don\'t have any sounds downloaded for this category</string>
+    <string name="unknownAndNoDownloadedSoundsErrorMessage">An unknown error has occurred and you don\'t have any sounds downloaded for this category</string>
 </resources>

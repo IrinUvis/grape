@@ -1,6 +1,7 @@
 package uvis.irin.grape.soundlist.ui.model
 
 import java.io.File
+import uvis.irin.grape.BuildConfig
 import uvis.irin.grape.soundlist.domain.model.DomainSound
 
 data class UiSound(
@@ -12,6 +13,15 @@ data class UiSound(
 ) {
     val name get() = fileName.substringBeforeLast('.')
 }
+
+fun File.toUiSound() = UiSound(
+    fileName = this.name,
+    path = this.path.substringAfter(
+        BuildConfig.APPLICATION_ID + "/files"),
+    isFavourite = false,
+    downloadState = DownloadState.Downloaded,
+    localFile = this,
+)
 
 fun DomainSound.toUiSound() = UiSound(
     fileName = this.name,

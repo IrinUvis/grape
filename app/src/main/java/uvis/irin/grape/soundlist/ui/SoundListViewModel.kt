@@ -217,15 +217,29 @@ class SoundListViewModel @Inject constructor(
                 viewStateForInitiallyLoadedSounds(sounds)
             }
             is FetchSoundsForPathResult.Failure -> {
-                viewStateForFetchSoundsForPathFailure(
-                    result = result
-                )
+                val offlineSounds = readSoundsAvailableOffline()
+
+                if (offlineSounds.isEmpty()) {
+                    viewStateForFetchSoundsForPathFailure(
+                        result = result
+                    )
+                } else {
+                    val sounds = offlineSounds.map { it.toUiSound() }
+
+                    viewStateForInitiallyLoadedSounds(sounds)
+                }
             }
         }
 
         _viewState.update {
             newViewState
         }
+    }
+
+    private fun readSoundsAvailableOffline(): List<File> {
+        val path = _viewState.value.category.path
+
+        return fileReadingService.readAllFilesInDirectory(path)
     }
 
     private suspend fun downloadSoundAndSaveIt(sound: UiSound) {
@@ -316,10 +330,12 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds: List<UiSound>) {
+        val path = _viewState.value.category.path
+
         val cloudSoundsNames = cloudSounds.map { it.fileName }
 
         val files =
-            fileReadingService.readAllFilesInDirectory(_viewState.value.category.path)
+            fileReadingService.readAllFilesInDirectory(path)
 
         val filesToDelete = files.filter { !cloudSoundsNames.contains(it.name) }
 
@@ -393,13 +409,13 @@ class SoundListViewModel @Inject constructor(
     ): UiText {
         return when (result) {
             FetchSoundsForPathResult.Failure.NoNetwork ->
-                UiText.ResourceText(R.string.networkErrorMessage)
+                UiText.ResourceText(R.string.networkAndNoDownloadedSoundsErrorMessage)
             FetchSoundsForPathResult.Failure.ExceededFreeTier ->
-                UiText.ResourceText(R.string.exceededFreeTierErrorMessage)
+                UiText.ResourceText(R.string.exceededFreeTierAndNoDownloadedSoundsErrorMessage)
             FetchSoundsForPathResult.Failure.Unexpected ->
-                UiText.ResourceText(R.string.unexpectedErrorMessage)
+                UiText.ResourceText(R.string.unexpectedAndNoDownloadedSoundsErrorMessage)
             FetchSoundsForPathResult.Failure.Unknown ->
-                UiText.ResourceText(R.string.unknownErrorMessage)
+                UiText.ResourceText(R.string.unknownAndNoDownloadedSoundsErrorMessage)
         }
     }
 
