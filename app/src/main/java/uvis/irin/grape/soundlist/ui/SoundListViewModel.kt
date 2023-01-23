@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uvis.irin.grape.R
+import uvis.irin.grape.categories.ui.model.UiCategory
 import uvis.irin.grape.core.android.service.file.FileDeletingService
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
@@ -24,7 +25,6 @@ import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
 import uvis.irin.grape.soundlist.ui.model.DownloadState
-import uvis.irin.grape.soundlist.ui.model.UiCategory
 import uvis.irin.grape.soundlist.ui.model.UiSound
 import uvis.irin.grape.soundlist.ui.model.toUiSound
 
@@ -213,7 +213,6 @@ class SoundListViewModel @Inject constructor(
             }
             is FetchSoundsForPathResult.Failure -> {
                 viewStateForFetchSoundsForPathFailure(
-                    previousState = _viewState.value,
                     result = result
                 )
             }
@@ -376,11 +375,9 @@ class SoundListViewModel @Inject constructor(
     }
 
     private fun viewStateForFetchSoundsForPathFailure(
-        previousState: SoundListViewState,
         result: FetchSoundsForPathResult.Failure
     ): SoundListViewState {
         return _viewState.value.copy(
-            category = previousState.category,
             soundsLoadingState = SoundsLoadingState.LoadingError,
             errorMessage = errorMessageForFetchSoundsForPathFailure(result)
         )

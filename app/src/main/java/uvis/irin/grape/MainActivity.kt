@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
+import uvis.irin.grape.categories.ui.CategoriesScreen
 import uvis.irin.grape.core.ui.theme.GrapeTheme
-import uvis.irin.grape.soundlist.ui.SoundListScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    SoundListScreen()
+                    CategoriesScreen()
                 }
             }
         }

@@ -1,8 +1,8 @@
 package uvis.irin.grape.soundlist.ui
 
+import uvis.irin.grape.categories.ui.model.UiCategory
 import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.soundlist.ui.model.DownloadState
-import uvis.irin.grape.soundlist.ui.model.UiCategory
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 data class SoundListViewState(

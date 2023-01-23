@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import uvis.irin.grape.R
+import uvis.irin.grape.categories.ui.model.UiCategory
 import uvis.irin.grape.core.ui.components.AppBarTitle
 import uvis.irin.grape.core.ui.components.NavigateBackButton
 import uvis.irin.grape.soundlist.ui.model.DownloadState
-import uvis.irin.grape.soundlist.ui.model.UiCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

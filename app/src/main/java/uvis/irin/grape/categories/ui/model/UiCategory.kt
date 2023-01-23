@@ -1,4 +1,4 @@
-package uvis.irin.grape.soundlist.ui.model
+package uvis.irin.grape.categories.ui.model
 
 import uvis.irin.grape.soundlist.domain.model.DomainCategory
 
