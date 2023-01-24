@@ -1,7 +1,7 @@
-package uvis.irin.grape.soundlist.data.repository
+package uvis.irin.grape.categories.data.repository
 
 import uvis.irin.grape.core.data.DataResult
-import uvis.irin.grape.soundlist.data.model.Category
+import uvis.irin.grape.categories.data.model.Category
 
 interface CategoryRepository {
 

@@ -1,4 +1,4 @@
-package uvis.irin.grape.soundlist.data.repository.impl
+package uvis.irin.grape.categories.data.repository.impl
 
 import android.util.Log
 import com.google.firebase.storage.FirebaseStorage
@@ -7,8 +7,8 @@ import com.google.firebase.storage.StorageReference
 import javax.inject.Inject
 import kotlinx.coroutines.tasks.await
 import uvis.irin.grape.core.data.DataResult
-import uvis.irin.grape.soundlist.data.model.Category
-import uvis.irin.grape.soundlist.data.repository.CategoryRepository
+import uvis.irin.grape.categories.data.model.Category
+import uvis.irin.grape.categories.data.repository.CategoryRepository
 
 class FirebaseCategoryRepository @Inject constructor(
     private val firebaseStorage: FirebaseStorage,
@@ -33,5 +33,5 @@ class FirebaseCategoryRepository @Inject constructor(
 
 fun StorageReference.toCategory() = Category(
     name = this.name,
-    absolutePath = this.path
+    path = this.path
 )

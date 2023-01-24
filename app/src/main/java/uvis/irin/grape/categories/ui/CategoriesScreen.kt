@@ -13,6 +13,7 @@ fun CategoriesScreen(
 
     CategoriesContent(
         viewState = viewState.value,
+        onNavigationIconClicked = {},
         navigateToSounds = navigateToSounds,
     )
 }

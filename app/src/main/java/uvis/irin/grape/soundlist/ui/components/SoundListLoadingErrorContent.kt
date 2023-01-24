@@ -20,7 +20,7 @@ import uvis.irin.grape.core.ui.components.VerticalSpacer
 import uvis.irin.grape.core.ui.helpers.errorImagePainterResources
 
 @Composable
-fun LoadingErrorContent(
+fun SoundListLoadingErrorContent(
     modifier: Modifier = Modifier,
     onRetryButtonClicked: () -> Unit,
     errorMessage: String,

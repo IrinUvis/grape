@@ -1,4 +1,4 @@
-package uvis.irin.grape.soundlist.ui.components
+package uvis.irin.grape.categories.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import uvis.irin.grape.core.ui.components.GrapeLoadingIndicator
 import uvis.irin.grape.core.ui.components.VerticalSpacer
 
 @Composable
-fun LoadingContent(
+fun CategoriesLoadingContent(
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {

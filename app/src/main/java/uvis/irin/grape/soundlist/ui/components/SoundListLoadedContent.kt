@@ -13,7 +13,7 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SoundsLoadedActiveContent(
+fun SoundListLoadedContent(
     modifier: Modifier = Modifier,
     sounds: List<UiSound>,
     scrollBehavior: TopAppBarScrollBehavior,

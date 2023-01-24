@@ -20,10 +20,10 @@ import uvis.irin.grape.core.constants.bigPadding
 import uvis.irin.grape.core.constants.smallPadding
 import uvis.irin.grape.core.ui.components.GrapeSnackbar
 import uvis.irin.grape.core.ui.helpers.getString
-import uvis.irin.grape.soundlist.ui.components.LoadingContent
-import uvis.irin.grape.soundlist.ui.components.LoadingErrorContent
+import uvis.irin.grape.soundlist.ui.components.SoundListLoadingContent
+import uvis.irin.grape.soundlist.ui.components.SoundListLoadingErrorContent
 import uvis.irin.grape.soundlist.ui.components.SoundListTopAppBar
-import uvis.irin.grape.soundlist.ui.components.SoundsLoadedActiveContent
+import uvis.irin.grape.soundlist.ui.components.SoundListLoadedContent
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +74,7 @@ fun SoundListContent(
         ) { screenState ->
             when (screenState) {
                 SoundsLoadingState.Loading -> {
-                    LoadingContent()
+                    SoundListLoadingContent()
                 }
                 SoundsLoadingState.Loaded -> {
                     LaunchedEffect(viewState.errorMessage) {
@@ -91,7 +91,7 @@ fun SoundListContent(
                     }
 
                     viewState.sounds?.let { sounds ->
-                        SoundsLoadedActiveContent(
+                        SoundListLoadedContent(
                             sounds = sounds,
                             scrollBehavior = scrollBehavior,
                             onSoundButtonClicked = onSoundButtonClicked,
@@ -103,7 +103,7 @@ fun SoundListContent(
                 }
                 SoundsLoadingState.LoadingError -> {
                     viewState.errorMessage?.let {
-                        LoadingErrorContent(
+                        SoundListLoadingErrorContent(
                             modifier = Modifier.padding(bigPadding),
                             onRetryButtonClicked = onRetryButtonClicked,
                             errorMessage = it.getString(),

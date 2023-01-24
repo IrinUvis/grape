@@ -10,16 +10,16 @@ import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import uvis.irin.grape.soundlist.ui.SoundListScreen
 
-const val SOUND_LIST_CATEGORY_PATH_ARG = "soundsCategory"
+const val SOUND_LIST_ARG = "soundsCategory"
 
-object SoundListDestination : AppDestination("soundlist/{$SOUND_LIST_CATEGORY_PATH_ARG}")
+object SoundListDestination : AppDestination("soundlist/{$SOUND_LIST_ARG}")
 
 fun NavGraphBuilder.soundListScreen(
     navController: NavController,
 ) {
     composable(
         route = SoundListDestination.route,
-        arguments = listOf(navArgument(SOUND_LIST_CATEGORY_PATH_ARG) { type = NavType.StringType })
+        arguments = listOf(navArgument(SOUND_LIST_ARG) { type = NavType.StringType })
     ) {
         SoundListScreen(
             navigateUp = { navController.navigateUp() },
@@ -34,7 +34,7 @@ fun NavController.navigateToSoundList(
 ) {
     navigate(
         SoundListDestination.route.replace(
-            oldValue = "{$SOUND_LIST_CATEGORY_PATH_ARG}",
+            oldValue = "{$SOUND_LIST_ARG}",
             newValue = path,
         ),
         navOptions = navOptions,

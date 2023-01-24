@@ -4,9 +4,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import uvis.irin.grape.soundlist.data.repository.CategoryRepository
+import uvis.irin.grape.categories.data.repository.CategoryRepository
+import uvis.irin.grape.categories.data.repository.impl.FirebaseCategoryRepository
 import uvis.irin.grape.soundlist.data.repository.SoundRepository
-import uvis.irin.grape.soundlist.data.repository.impl.FirebaseCategoryRepository
 import uvis.irin.grape.soundlist.data.repository.impl.FirebaseSoundRepository
 
 @Module

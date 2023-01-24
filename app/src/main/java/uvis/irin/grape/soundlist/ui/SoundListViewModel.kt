@@ -22,7 +22,7 @@ import uvis.irin.grape.core.android.service.file.FileWritingService
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
-import uvis.irin.grape.navigation.SOUND_LIST_CATEGORY_PATH_ARG
+import uvis.irin.grape.navigation.SOUND_LIST_ARG
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
@@ -48,9 +48,8 @@ class SoundListViewModel @Inject constructor(
 
     private val mediaPlayer = MediaPlayer()
 
-    private val categoryPath =
-        (checkNotNull(savedStateHandle[SOUND_LIST_CATEGORY_PATH_ARG]) as String)
-            .withDashesReplacedByForwardSlashes()
+    private val categoryPath = (checkNotNull(savedStateHandle[SOUND_LIST_ARG]) as String)
+        .withDashesReplacedByForwardSlashes()
 
     private val _viewState: MutableStateFlow<SoundListViewState> = MutableStateFlow(
         SoundListViewState(
