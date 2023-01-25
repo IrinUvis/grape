@@ -35,14 +35,6 @@ fun CategoriesContent(
                     CategoriesLoadedContent(
                         categories = viewState.categories!!,
                     )
-//                    Box(modifier = Modifier.fillMaxSize()) {
-//                        Button(
-//                            modifier = Modifier.align(Alignment.Center),
-//                            onClick = navigateToSounds
-//                        ) {
-//                            Text(text = "jail")
-//                        }
-//                    }
                 }
                 false -> {
                     CategoriesLoadingContent()

@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import uvis.irin.grape.categories.domain.usecase.FetchCategoriesForPathUseCase
+import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchCategoriesForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchByteArrayForPathUseCase
@@ -22,4 +24,9 @@ abstract class UseCaseModule {
     abstract fun bindFetchDownloadUrlForPathUseCase(
         fetchDownloadUrlForPathUseCase: ProdFetchByteArrayForPathUseCase,
     ): FetchByteArrayForPathUseCase
+
+    @Binds
+    abstract fun bindFetchCategoriesForPathUseCase(
+        fetchCategoriesForPathUseCase: ProdFetchCategoriesForPathUseCase,
+    ): FetchCategoriesForPathUseCase
 }

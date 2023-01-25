@@ -1,7 +1,7 @@
 package uvis.irin.grape.categories.ui.model
 
+import uvis.irin.grape.categories.domain.model.DomainCategory
 import uvis.irin.grape.core.extension.capitalize
-import uvis.irin.grape.soundlist.domain.model.DomainCategory
 
 data class UiCategory(
     val path: String,

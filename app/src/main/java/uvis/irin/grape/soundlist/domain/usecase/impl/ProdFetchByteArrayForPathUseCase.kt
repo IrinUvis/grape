@@ -37,9 +37,7 @@ class ProdFetchByteArrayForPathUseCase @Inject constructor(
                         }
                     }
                     is IndexOutOfBoundsException -> FetchByteArrayForPathResult.Failure.TooLargeFile
-                    else -> {
-                        FetchByteArrayForPathResult.Failure.Unknown
-                    }
+                    else -> FetchByteArrayForPathResult.Failure.Unknown
                 }
             }
         }

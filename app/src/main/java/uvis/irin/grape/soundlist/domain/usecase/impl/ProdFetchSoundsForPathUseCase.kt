@@ -37,9 +37,7 @@ class ProdFetchSoundsForPathUseCase @Inject constructor(
                             else -> FetchSoundsForPathResult.Failure.Unexpected
                         }
                     }
-                    else -> {
-                        FetchSoundsForPathResult.Failure.Unknown
-                    }
+                    else -> FetchSoundsForPathResult.Failure.Unknown
                 }
             }
         }

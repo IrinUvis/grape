@@ -6,4 +6,6 @@ import uvis.irin.grape.categories.data.model.Category
 interface CategoryRepository {
 
     suspend fun fetchCategoriesForPath(path: String): DataResult<List<Category>>
+
+    suspend fun fetchImageByteArrayForPath(path: String): DataResult<ByteArray>
 }

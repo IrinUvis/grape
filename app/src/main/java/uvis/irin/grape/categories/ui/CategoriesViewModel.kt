@@ -6,19 +6,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import uvis.irin.grape.categories.domain.model.result.FetchCategoriesForPathResult
+import uvis.irin.grape.categories.domain.usecase.FetchCategoriesForPathUseCase
 import uvis.irin.grape.categories.ui.model.UiCategory
+import uvis.irin.grape.categories.ui.model.toUiCategory
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.navigation.CATEGORIES_ARG
 
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val fetchCategoriesForPathUseCase: FetchCategoriesForPathUseCase,
 ) : ViewModel() {
 
     private val categoryPath: String = (checkNotNull(savedStateHandle[CATEGORIES_ARG]) as String)
@@ -36,14 +39,21 @@ class CategoriesViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             Log.d("VM", categoryPath)
-            delay(2000)
-            _viewState.update {
-                val category = it.category
-                it.copy(
-                    categories = List(10) { category },
-                    isLoaded = true,
-                )
+
+            val result = fetchCategoriesForPathUseCase(categoryPath)
+
+            if (result is FetchCategoriesForPathResult.Success) {
+                _viewState.update {
+                    it.copy(
+                        categories = result.categories.map { it.toUiCategory() },
+                        isLoaded = true,
+                    )
+                }
             }
         }
+    }
+
+    private suspend fun loadCategories() {
+
     }
 }
