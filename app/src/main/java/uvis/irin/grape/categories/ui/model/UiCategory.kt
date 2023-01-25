@@ -6,14 +6,21 @@ import uvis.irin.grape.core.extension.capitalize
 
 data class UiCategory(
     val path: String,
+    val isFirstCategory: Boolean,
+    val isFinalCategory: Boolean,
     val bitmap: Bitmap,
 ) {
     val name: String
         get() = categoryPathToName(path)
 }
 
-fun DomainCategory.toUiCategory(bitmap: Bitmap) = UiCategory(
+fun DomainCategory.toUiCategory(
+    isFirstCategory: Boolean,
+    bitmap: Bitmap
+) = UiCategory(
     path = this.path,
+    isFirstCategory = isFirstCategory,
+    isFinalCategory = this.isFinalCategory,
     bitmap = bitmap,
 )
 

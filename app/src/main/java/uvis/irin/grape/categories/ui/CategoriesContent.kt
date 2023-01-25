@@ -9,19 +9,19 @@ import androidx.compose.ui.Modifier
 import uvis.irin.grape.categories.ui.components.CategoriesLoadedContent
 import uvis.irin.grape.categories.ui.components.CategoriesLoadingContent
 import uvis.irin.grape.categories.ui.components.CategoriesTopAppBar
+import uvis.irin.grape.categories.ui.model.UiCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesContent(
     viewState: CategoriesViewState,
     onNavigationIconClicked: () -> Unit,
-    navigateToSounds: () -> Unit,
+    onCategoryCardClicked: (UiCategory) -> Unit,
 ) {
     Scaffold(
         topBar = {
             CategoriesTopAppBar(
                 category = viewState.category,
-                isTopLevelCategory = true,
                 onNavigationIconClicked = onNavigationIconClicked,
             )
         }
@@ -34,6 +34,7 @@ fun CategoriesContent(
                 true -> {
                     CategoriesLoadedContent(
                         categories = viewState.categories!!,
+                        onCategoryCardClicked = onCategoryCardClicked,
                     )
                 }
                 false -> {

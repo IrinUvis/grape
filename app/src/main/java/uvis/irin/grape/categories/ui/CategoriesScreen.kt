@@ -7,13 +7,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun CategoriesScreen(
     viewModel: CategoriesViewModel = hiltViewModel(),
-    navigateToSounds: () -> Unit,
+    navigateUp: () -> Unit,
+    navigateToSounds: (String) -> Unit,
+    navigateToCategories: (String) -> Unit,
 ) {
     val viewState = viewModel.viewState.collectAsState()
 
     CategoriesContent(
         viewState = viewState.value,
-        onNavigationIconClicked = {},
-        navigateToSounds = navigateToSounds,
+        onNavigationIconClicked = navigateUp,
+        onCategoryCardClicked = { category ->
+            if (category.isFinalCategory) {
+                navigateToSounds(category.path)
+            } else {
+                navigateToCategories(category.path)
+            }
+        },
     )
 }

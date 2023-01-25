@@ -15,14 +15,17 @@ import uvis.irin.grape.core.ui.components.NavigateBackButton
 fun CategoriesTopAppBar(
     modifier: Modifier = Modifier,
     category: UiCategory,
-    isTopLevelCategory: Boolean,
     onNavigationIconClicked: () -> Unit,
 ) {
     TopAppBar(
         modifier = modifier,
-        title = { Text(text = category.name) },
+        title = {
+            Text(
+                text = if (category.isFirstCategory) stringResource(R.string.app_name) else category.name,
+            )
+        },
         navigationIcon = {
-            if (!isTopLevelCategory) {
+            if (!category.isFirstCategory) {
                 NavigateBackButton(
                     onClick = onNavigationIconClicked,
                     contentDescription = stringResource(R.string.navigationIconContentDescription),

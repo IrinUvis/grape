@@ -1,6 +1,5 @@
 package uvis.irin.grape.categories.ui
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,6 +22,7 @@ import uvis.irin.grape.categories.ui.model.toUiCategory
 import uvis.irin.grape.core.android.service.image.BitmapEncodingService
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.navigation.CATEGORIES_ARG
+import uvis.irin.grape.navigation.INITIAL_CATEGORIES_ARG
 
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
@@ -39,6 +39,8 @@ class CategoriesViewModel @Inject constructor(
         CategoriesViewState(
             category = UiCategory(
                 path = categoryPath,
+                isFirstCategory = categoryPath == INITIAL_CATEGORIES_ARG,
+                isFinalCategory = false,
                 bitmap = bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
             )
         )
@@ -47,8 +49,6 @@ class CategoriesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            Log.d("VM", categoryPath)
-
             val useCaseResult = fetchCategoriesForPathUseCase(categoryPath)
 
             if (useCaseResult is FetchCategoriesForPathResult.Success) {
@@ -69,7 +69,10 @@ class CategoriesViewModel @Inject constructor(
                         val bitmap = pair.first
                         val category = pair.second
 
-                        category.toUiCategory(bitmap)
+                        category.toUiCategory(
+                            isFirstCategory = false,
+                            bitmap = bitmap,
+                        )
                     }
 
                 _viewState.update {

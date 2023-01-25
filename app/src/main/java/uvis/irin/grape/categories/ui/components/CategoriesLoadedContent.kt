@@ -34,6 +34,7 @@ private const val GRID_COLUMNS_COUNT = 2
 fun CategoriesLoadedContent(
     modifier: Modifier = Modifier,
     categories: List<UiCategory>,
+    onCategoryCardClicked: (UiCategory) -> Unit,
 ) {
     LazyVerticalGrid(
         modifier = modifier,
@@ -45,7 +46,7 @@ fun CategoriesLoadedContent(
                     horizontal = mediumPadding,
                     vertical = mediumPadding
                 ),
-                onClick = { }
+                onClick = { onCategoryCardClicked(category) }
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally

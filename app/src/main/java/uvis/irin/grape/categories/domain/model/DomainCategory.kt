@@ -3,11 +3,11 @@ package uvis.irin.grape.categories.domain.model
 import uvis.irin.grape.categories.data.model.Category
 
 data class DomainCategory(
-    val name: String,
-    val path: String
+    val path: String,
+    val isFinalCategory: Boolean,
 )
 
 fun Category.toDomainCategory() = DomainCategory(
-    name = this.name,
     path = this.path,
+    isFinalCategory = this.isFinalCategory,
 )

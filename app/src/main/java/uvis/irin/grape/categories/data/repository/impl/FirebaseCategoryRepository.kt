@@ -23,9 +23,15 @@ class FirebaseCategoryRepository @Inject constructor(
         return try {
             val reference = firebaseStorage.reference.child(path)
             val result = reference.listAll().await()
-            DataResult.Success(
-                result.prefixes.map { it.toCategory() }
-            )
+            val categoryStorageReferences = result.prefixes
+            val categories = categoryStorageReferences.map { storageReference ->
+                val isFinalCategory = isFinalCategory(storageReference)
+                storageReference.toCategory(
+                    isFinalCategory = isFinalCategory,
+                )
+            }
+
+            DataResult.Success(categories)
         } catch (e: StorageException) {
             Log.d(TAG, "fetchCategoriesForPath: e")
             DataResult.Failure(e)
@@ -45,9 +51,14 @@ class FirebaseCategoryRepository @Inject constructor(
             DataResult.Failure(e)
         }
     }
+
+    private suspend fun isFinalCategory(reference: StorageReference): Boolean {
+        val prefixes = reference.listAll().await().prefixes
+        return prefixes.isEmpty() // no more subdirs
+    }
 }
 
-fun StorageReference.toCategory() = Category(
-    name = this.name,
-    path = this.path
+fun StorageReference.toCategory(isFinalCategory: Boolean) = Category(
+    path = this.path,
+    isFinalCategory = isFinalCategory,
 )

@@ -29,8 +29,12 @@ fun NavGraphBuilder.categoriesScreen(
         )
     ) {
         CategoriesScreen(
-            navigateToSounds = {
-                navController.navigateToSoundList("sounds/01_jail".withForwardSlashesReplacedByDashes())
+            navigateUp = { navController.navigateUp() },
+            navigateToSounds = { path ->
+                navController.navigateToSoundList(path.withForwardSlashesReplacedByDashes())
+            },
+            navigateToCategories = { path ->
+                navController.navigateToCategories(path.withForwardSlashesReplacedByDashes())
             }
         )
     }

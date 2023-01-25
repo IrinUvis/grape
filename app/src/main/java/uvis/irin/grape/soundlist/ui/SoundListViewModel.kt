@@ -41,7 +41,7 @@ class SoundListViewModel @Inject constructor(
     private val fileWritingService: FileWritingService,
     private val fileReadingService: FileReadingService,
     private val fileDeletingService: FileDeletingService,
-    private val bitmapEncodingService: BitmapEncodingService,
+    bitmapEncodingService: BitmapEncodingService,
 ) : ViewModel() {
 
     companion object {
@@ -57,6 +57,8 @@ class SoundListViewModel @Inject constructor(
         SoundListViewState(
             category = UiCategory(
                 path = categoryPath,
+                isFirstCategory = false,
+                isFinalCategory = true,
                 bitmap = bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
             ),
             soundsLoadingState = SoundsLoadingState.Loading,
