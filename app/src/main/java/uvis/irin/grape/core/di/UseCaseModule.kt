@@ -5,7 +5,9 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import uvis.irin.grape.categories.domain.usecase.FetchCategoriesForPathUseCase
+import uvis.irin.grape.categories.domain.usecase.FetchImageByteArrayForPathUseCase
 import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchCategoriesForPathUseCase
+import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchImageByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchByteArrayForPathUseCase
@@ -29,4 +31,9 @@ abstract class UseCaseModule {
     abstract fun bindFetchCategoriesForPathUseCase(
         fetchCategoriesForPathUseCase: ProdFetchCategoriesForPathUseCase,
     ): FetchCategoriesForPathUseCase
+
+    @Binds
+    abstract fun bindFetchImageByteArrayForPathUseCase(
+        fetchImageByteArrayForPathUseCase: ProdFetchImageByteArrayForPathUseCase,
+    ): FetchImageByteArrayForPathUseCase
 }

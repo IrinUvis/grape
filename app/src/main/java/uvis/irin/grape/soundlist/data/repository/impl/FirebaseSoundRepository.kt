@@ -16,6 +16,7 @@ class FirebaseSoundRepository @Inject constructor(
 ) : SoundRepository {
     companion object {
         private const val TAG = "FirebaseSoundRepository"
+        private const val MP3_EXTENSION = "mp3"
     }
 
     override suspend fun fetchSoundsForPath(path: String): DataResult<List<Sound>> {
@@ -23,7 +24,9 @@ class FirebaseSoundRepository @Inject constructor(
             val reference = firebaseStorage.reference.child(path)
             val result = reference.listAll().await()
             DataResult.Success(
-                result.items.map { it.toSound() }
+                result.items
+                    .filter { it.name.substringAfterLast('.') == MP3_EXTENSION }
+                    .map { it.toSound() }
             )
         } catch (e: StorageException) {
             Log.d(TAG, "fetchSoundsForPath: $e")

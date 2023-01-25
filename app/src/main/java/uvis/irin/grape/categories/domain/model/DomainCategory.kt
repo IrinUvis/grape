@@ -4,10 +4,10 @@ import uvis.irin.grape.categories.data.model.Category
 
 data class DomainCategory(
     val name: String,
-    val absolutePath: String
+    val path: String
 )
 
 fun Category.toDomainCategory() = DomainCategory(
     name = this.name,
-    absolutePath = this.path,
+    path = this.path,
 )

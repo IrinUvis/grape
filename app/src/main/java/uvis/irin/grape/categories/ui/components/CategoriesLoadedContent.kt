@@ -20,24 +20,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import uvis.irin.grape.R
 import uvis.irin.grape.categories.ui.model.UiCategory
 import uvis.irin.grape.core.constants.mediumPadding
 import uvis.irin.grape.core.constants.smallPadding
 
 private const val GRID_COLUMNS_COUNT = 2
-
-val lichtmans = listOf(
-    R.drawable.test,
-    R.drawable.test2,
-    R.drawable.test3,
-    R.drawable.test4,
-    R.drawable.test5,
-    R.drawable.test6,
-)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -62,7 +52,7 @@ fun CategoriesLoadedContent(
                 ) {
                     Image(
                         modifier = Modifier.aspectRatio(1f),
-                        painter = painterResource(lichtmans.random()),
+                        bitmap = category.bitmap.asImageBitmap(),
                         contentScale = ContentScale.Crop,
                         contentDescription = "",
                     )

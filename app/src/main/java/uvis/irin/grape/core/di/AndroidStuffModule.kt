@@ -12,6 +12,8 @@ import uvis.irin.grape.core.android.service.file.impl.ProdFileDeletingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileReadingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileSharingService
 import uvis.irin.grape.core.android.service.file.impl.ProdFileWritingService
+import uvis.irin.grape.core.android.service.image.BitmapEncodingService
+import uvis.irin.grape.core.android.service.image.impl.ProdBitmapEncodingService
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -36,4 +38,9 @@ abstract class AndroidStuffModule {
     abstract fun bindFileDeletingService(
         fileDeletingService: ProdFileDeletingService
     ): FileDeletingService
+
+    @Binds
+    abstract fun bindBitmapEncodingService(
+        bitmapEncodingService: ProdBitmapEncodingService
+    ): BitmapEncodingService
 }

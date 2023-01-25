@@ -19,6 +19,7 @@ import uvis.irin.grape.core.android.service.file.FileDeletingService
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
 import uvis.irin.grape.core.android.service.file.FileWritingService
+import uvis.irin.grape.core.android.service.image.BitmapEncodingService
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
@@ -40,6 +41,7 @@ class SoundListViewModel @Inject constructor(
     private val fileWritingService: FileWritingService,
     private val fileReadingService: FileReadingService,
     private val fileDeletingService: FileDeletingService,
+    private val bitmapEncodingService: BitmapEncodingService,
 ) : ViewModel() {
 
     companion object {
@@ -55,6 +57,7 @@ class SoundListViewModel @Inject constructor(
         SoundListViewState(
             category = UiCategory(
                 path = categoryPath,
+                bitmap = bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
             ),
             soundsLoadingState = SoundsLoadingState.Loading,
             sounds = null,
