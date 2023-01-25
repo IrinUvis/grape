@@ -8,8 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import uvis.irin.grape.categories.ui.components.CategoriesLoadedContent
 import uvis.irin.grape.categories.ui.components.CategoriesLoadingContent
+import uvis.irin.grape.categories.ui.components.CategoriesLoadingErrorContent
 import uvis.irin.grape.categories.ui.components.CategoriesTopAppBar
 import uvis.irin.grape.categories.ui.model.UiCategory
+import uvis.irin.grape.core.ui.helpers.getString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,6 +19,7 @@ fun CategoriesContent(
     viewState: CategoriesViewState,
     onNavigationIconClicked: () -> Unit,
     onCategoryCardClicked: (UiCategory) -> Unit,
+    onRetryButtonClicked: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -28,17 +31,27 @@ fun CategoriesContent(
     ) { paddingValues ->
         Crossfade(
             modifier = Modifier.padding(paddingValues),
-            targetState = viewState.isLoaded,
-        ) { isLoaded ->
-            when (isLoaded) {
-                true -> {
-                    CategoriesLoadedContent(
-                        categories = viewState.categories!!,
-                        onCategoryCardClicked = onCategoryCardClicked,
-                    )
-                }
-                false -> {
+            targetState = viewState.categoriesLoadingState,
+        ) { categoriesLoadingState ->
+            when (categoriesLoadingState) {
+                CategoriesLoadingState.Loading -> {
                     CategoriesLoadingContent()
+                }
+                CategoriesLoadingState.Loaded -> {
+                    viewState.categories?.let { categories ->
+                        CategoriesLoadedContent(
+                            categories = categories,
+                            onCategoryCardClicked = onCategoryCardClicked,
+                        )
+                    }
+                }
+                CategoriesLoadingState.LoadingError -> {
+                    viewState.errorMessage?.let { errorMessage ->
+                        CategoriesLoadingErrorContent(
+                            onRetryButtonClicked = onRetryButtonClicked,
+                            errorMessage = errorMessage.getString()
+                        )
+                    }
                 }
             }
         }

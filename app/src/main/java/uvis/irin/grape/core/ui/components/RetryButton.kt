@@ -1,4 +1,4 @@
-package uvis.irin.grape.soundlist.ui.components
+package uvis.irin.grape.core.ui.components
 
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text

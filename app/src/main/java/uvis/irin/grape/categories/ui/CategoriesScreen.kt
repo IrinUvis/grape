@@ -23,5 +23,6 @@ fun CategoriesScreen(
                 navigateToCategories(category.path)
             }
         },
+        onRetryButtonClicked = viewModel::retryLoadingCategories
     )
 }

@@ -102,11 +102,11 @@ fun SoundListContent(
                     }
                 }
                 SoundsLoadingState.LoadingError -> {
-                    viewState.errorMessage?.let {
+                    viewState.errorMessage?.let { errorMessage ->
                         SoundListLoadingErrorContent(
                             modifier = Modifier.padding(bigPadding),
                             onRetryButtonClicked = onRetryButtonClicked,
-                            errorMessage = it.getString(),
+                            errorMessage = errorMessage.getString(),
                         )
                     }
                 }

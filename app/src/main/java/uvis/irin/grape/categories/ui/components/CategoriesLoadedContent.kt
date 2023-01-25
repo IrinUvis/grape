@@ -1,5 +1,6 @@
 package uvis.irin.grape.categories.ui.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -51,12 +52,14 @@ fun CategoriesLoadedContent(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Image(
-                        modifier = Modifier.aspectRatio(1f),
-                        bitmap = category.bitmap.asImageBitmap(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = "",
-                    )
+                    Crossfade(targetState = category.bitmap) { bitmap ->
+                        Image(
+                            modifier = Modifier.aspectRatio(1f),
+                            bitmap = bitmap.asImageBitmap(),
+                            contentScale = ContentScale.Crop,
+                            contentDescription = "",
+                        )
+                    }
 
                     Surface(
                         modifier = Modifier.fillMaxWidth(),

@@ -1,9 +1,17 @@
 package uvis.irin.grape.categories.ui
 
 import uvis.irin.grape.categories.ui.model.UiCategory
+import uvis.irin.grape.core.ui.helpers.UiText
 
 data class CategoriesViewState(
     val category: UiCategory,
+    val categoriesLoadingState: CategoriesLoadingState = CategoriesLoadingState.Loading,
     val categories: List<UiCategory>? = null,
-    val isLoaded: Boolean = false,
+    val errorMessage: UiText? = null,
 )
+
+enum class CategoriesLoadingState {
+    Loading,
+    Loaded,
+    LoadingError,
+}
