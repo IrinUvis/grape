@@ -22,8 +22,8 @@ class ProdFileDeletingService @Inject constructor(
         withContext(ioDispatcher) {
             val tempFiles = directory.listFiles() ?: emptyArray()
             for (tempFile in tempFiles) {
-                if (!tempFile.isDirectory)
-                    tempFile.delete()
+                if (tempFile.isFile) tempFile.delete()
+                if (tempFile.isDirectory) clearDirectory(tempFile)
             }
         }
     }

@@ -72,34 +72,52 @@ class CategoriesViewModel @Inject constructor(
     }
 
     private suspend fun loadCategories() {
+        when (val result = fetchCategoriesForPathUseCase(categoryPath)) {
+            is FetchCategoriesForPathResult.Success -> loadCategoriesRemotely(result)
+            is FetchCategoriesForPathResult.Failure -> loadCategoriesLocally(result)
+        }
+    }
+
+    private suspend fun loadCategoriesRemotely(result: FetchCategoriesForPathResult.Success) {
         coroutineScope {
-            when (val useCaseResult = fetchCategoriesForPathUseCase(categoryPath)) {
-                is FetchCategoriesForPathResult.Success -> {
-                    val categoriesWithImagesDeferred = async {
-                        categoriesWithImagesForFetchCategoriesForPathSuccess(useCaseResult)
-                    }
-
-                    val categoriesWithoutImages =
-                        categoriesWithoutImagesForFetchCategoriesForPathSuccess(useCaseResult)
-
-                    _viewState.update { viewStateForLoadedCategories(categoriesWithoutImages) }
-
-                    val categoriesWithImages = categoriesWithImagesDeferred.await()
-
-                    _viewState.update { viewStateForLoadedCategories(categoriesWithImages) }
-
-                    launch { deleteRedundantLocalCategories(categoriesWithImages) }
-                }
-                is FetchCategoriesForPathResult.Failure -> {
-                    val categories = loadLocallySavedCategories()
-
-                    if (categories.isEmpty()) {
-                        _viewState.update { viewStateForFetchSoundsForPathFailure(useCaseResult) }
-                    } else {
-                        _viewState.update { viewStateForLoadedCategories(categories) }
-                    }
-                }
+            val categoriesWithImagesDeferred = async {
+                categoriesWithImagesForFetchCategoriesForPathSuccess(result)
             }
+
+            val categoriesWithoutImages =
+                categoriesWithoutImagesForFetchCategoriesForPathSuccess(result)
+
+            _viewState.update { viewStateForLoadedCategories(categoriesWithoutImages) }
+
+            val categoriesWithImages = categoriesWithImagesDeferred.await()
+
+            _viewState.update { viewStateForLoadedCategories(categoriesWithImages) }
+
+            launch { deleteRedundantLocalCategories(categoriesWithImages) }
+        }
+    }
+
+    private suspend fun loadCategoriesLocally(result: FetchCategoriesForPathResult.Failure) {
+        coroutineScope {
+            val categories = fetchLocalCategoriesForPathUseCase(categoryPath)
+
+            if (categories.isEmpty()) {
+                _viewState.update { viewStateForFetchCategoriesForPathFailure(result) }
+            } else {
+                _viewState.update { viewStateForLoadedCategories(categories.map { it.toUiCategory() }) }
+            }
+
+            val categoryImages =
+                categories.map { fetchLocalImageByteArrayForPathUseCase(it.path) }
+            val categoryBitmaps = categoryImages.map { byteArrayToBitmap(it) }
+
+            val categoriesWithImages = categories.mapIndexed { index, category ->
+                val bitmap = categoryBitmaps[index]
+
+                category.toUiCategory(bitmap = bitmap)
+            }
+
+            _viewState.update { viewStateForLoadedCategories(categoriesWithImages) }
         }
     }
 
@@ -108,7 +126,7 @@ class CategoriesViewModel @Inject constructor(
     ): List<UiCategory> {
         val categories = result.categories
 
-        return categories.map { it.toUiCategory(isFirstCategory = false) }
+        return categories.map { it.toUiCategory() }
     }
 
     private suspend fun categoriesWithImagesForFetchCategoriesForPathSuccess(
@@ -129,7 +147,6 @@ class CategoriesViewModel @Inject constructor(
                 val bitmap = bitmapForFetchImageByteArrayForPathResult(fetchImageResult)
 
                 category.toUiCategory(
-                    isFirstCategory = false,
                     bitmap = bitmap,
                 )
             }
@@ -148,19 +165,6 @@ class CategoriesViewModel @Inject constructor(
             is FetchImageByteArrayForPathResult.Failure -> {
                 bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
             }
-        }
-    }
-
-    private suspend fun loadLocallySavedCategories(): List<UiCategory> {
-        val categories = fetchLocalCategoriesForPathUseCase(categoryPath)
-
-        val categoryImages = categories.map { fetchLocalImageByteArrayForPathUseCase(it.path) }
-        val categoryBitmaps = categoryImages.map { byteArrayToBitmap(it) }
-
-        return categories.mapIndexed { index, category ->
-            val bitmap = categoryBitmaps[index]
-
-            category.toUiCategory(bitmap = bitmap)
         }
     }
 
@@ -198,7 +202,7 @@ class CategoriesViewModel @Inject constructor(
         )
     }
 
-    private fun viewStateForFetchSoundsForPathFailure(
+    private fun viewStateForFetchCategoriesForPathFailure(
         result: FetchCategoriesForPathResult.Failure
     ): CategoriesViewState {
         return _viewState.value.copy(
