@@ -19,7 +19,6 @@ import uvis.irin.grape.core.android.service.file.FileDeletingService
 import uvis.irin.grape.core.android.service.file.FileReadingService
 import uvis.irin.grape.core.android.service.file.FileSharingService
 import uvis.irin.grape.core.android.service.file.FileWritingService
-import uvis.irin.grape.core.android.service.image.BitmapEncodingService
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
@@ -41,7 +40,6 @@ class SoundListViewModel @Inject constructor(
     private val fileWritingService: FileWritingService,
     private val fileReadingService: FileReadingService,
     private val fileDeletingService: FileDeletingService,
-    bitmapEncodingService: BitmapEncodingService,
 ) : ViewModel() {
 
     companion object {
@@ -59,7 +57,7 @@ class SoundListViewModel @Inject constructor(
                 path = categoryPath,
                 isFirstCategory = false,
                 isFinalCategory = true,
-                bitmap = bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
+                bitmap = null,
             ),
             soundsLoadingState = SoundsLoadingState.Loading,
             sounds = null,
@@ -240,10 +238,12 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    private fun readSoundsAvailableOffline(): List<File> {
+    private suspend fun readSoundsAvailableOffline(): List<File> {
         val path = _viewState.value.category.path
 
-        return fileReadingService.readAllFilesInDirectory(path)
+        val allFiles = fileReadingService.readAllFilesInDirectory(path)
+
+        return allFiles.filter { it.extension == "mp3" }
     }
 
     private suspend fun downloadSoundAndSaveIt(sound: UiSound) {
@@ -303,7 +303,7 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    private fun removeSoundFile(sound: UiSound) {
+    private suspend fun removeSoundFile(sound: UiSound) {
         val file = fileReadingService.readFile(sound.path)
 
         if (file != null) {
@@ -333,7 +333,7 @@ class SoundListViewModel @Inject constructor(
         mediaPlayer.start()
     }
 
-    private fun deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds: List<UiSound>) {
+    private suspend fun deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds: List<UiSound>) {
         val path = _viewState.value.category.path
 
         val cloudSoundsNames = cloudSounds.map { it.fileName }
@@ -348,7 +348,7 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    private fun clearCacheAndCreateCachedFile(sound: UiSound, bytes: ByteArray): File {
+    private suspend fun clearCacheAndCreateCachedFile(sound: UiSound, bytes: ByteArray): File {
         fileDeletingService.clearCache()
 
         return fileWritingService.writeFileToCachedStorage(sound.fileName, bytes)
@@ -372,7 +372,7 @@ class SoundListViewModel @Inject constructor(
         }
     }
 
-    private fun soundsForFetchSoundsForPathSuccess(
+    private suspend fun soundsForFetchSoundsForPathSuccess(
         result: FetchSoundsForPathResult.Success
     ): List<UiSound> {
         return result.sounds.map { it.toUiSound() }.map {

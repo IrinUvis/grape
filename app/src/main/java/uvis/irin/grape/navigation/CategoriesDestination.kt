@@ -12,7 +12,7 @@ import uvis.irin.grape.categories.ui.CategoriesScreen
 import uvis.irin.grape.core.extension.withForwardSlashesReplacedByDashes
 
 const val CATEGORIES_ARG = "parentCategory"
-const val INITIAL_CATEGORIES_ARG = "sounds"
+const val INITIAL_CATEGORIES_ARG = "/sounds"
 
 object CategoriesDestination : AppDestination("categories/{$CATEGORIES_ARG}")
 
@@ -50,15 +50,5 @@ fun NavController.navigateToCategories(
             newValue = path,
         ),
         navOptions = navOptions,
-    )
-}
-
-fun NavController.navigateToCategories(
-    path: String,
-    builder: (NavOptionsBuilder.() -> Unit),
-) {
-    navigateToCategories(
-        path = path,
-        navOptions(builder),
     )
 }

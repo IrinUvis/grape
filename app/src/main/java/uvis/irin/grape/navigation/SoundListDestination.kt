@@ -40,13 +40,3 @@ fun NavController.navigateToSoundList(
         navOptions = navOptions,
     )
 }
-
-fun NavController.navigateToSoundList(
-    path: String,
-    builder: (NavOptionsBuilder.() -> Unit),
-) {
-    navigateToSoundList(
-        path = path,
-        navOptions(builder),
-    )
-}

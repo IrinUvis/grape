@@ -4,25 +4,33 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import uvis.irin.grape.core.android.service.file.FileDeletingService
+import uvis.irin.grape.core.di.IoDispatcher
 
 class ProdFileDeletingService @Inject constructor(
     @ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : FileDeletingService {
 
-    override fun deleteFile(file: File) {
-        file.delete()
+    override suspend fun deleteFile(file: File) {
+        withContext(ioDispatcher) { file.delete() }
     }
 
-    override fun clearDirectory(directory: File) {
-        val tempFiles = directory.listFiles() ?: emptyArray()
-        for (tempFile in tempFiles) {
-            if (!tempFile.isDirectory)
-                tempFile.delete()
+    override suspend fun clearDirectory(directory: File) {
+        withContext(ioDispatcher) {
+            val tempFiles = directory.listFiles() ?: emptyArray()
+            for (tempFile in tempFiles) {
+                if (!tempFile.isDirectory)
+                    tempFile.delete()
+            }
         }
     }
 
-    override fun clearCache() {
-        clearDirectory(context.cacheDir)
+    override suspend fun clearCache() {
+        withContext(ioDispatcher) {
+            clearDirectory(context.cacheDir)
+        }
     }
 }

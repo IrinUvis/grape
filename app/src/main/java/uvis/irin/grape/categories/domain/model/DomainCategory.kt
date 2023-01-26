@@ -5,7 +5,10 @@ import uvis.irin.grape.categories.data.model.Category
 data class DomainCategory(
     val path: String,
     val isFinalCategory: Boolean,
-)
+) {
+    val filename: String
+        get() = path.substringAfterLast('/')
+}
 
 fun Category.toDomainCategory() = DomainCategory(
     path = this.path,

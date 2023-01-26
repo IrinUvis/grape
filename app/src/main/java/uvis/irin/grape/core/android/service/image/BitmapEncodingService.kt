@@ -5,7 +5,7 @@ import androidx.annotation.DrawableRes
 
 interface BitmapEncodingService {
 
-    fun byteArrayToBitmap(byteArray: ByteArray): Bitmap
+    suspend fun byteArrayToBitmap(byteArray: ByteArray): Bitmap
 
-    fun drawableToBitmap(@DrawableRes drawable: Int): Bitmap
+    suspend fun drawableToBitmap(@DrawableRes drawable: Int): Bitmap
 }

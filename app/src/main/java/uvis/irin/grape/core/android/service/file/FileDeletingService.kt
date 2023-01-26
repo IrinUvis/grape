@@ -4,9 +4,9 @@ import java.io.File
 
 interface FileDeletingService {
 
-    fun deleteFile(file: File)
+    suspend fun deleteFile(file: File)
 
-    fun clearDirectory(directory: File)
+    suspend fun clearDirectory(directory: File)
 
-    fun clearCache()
+    suspend fun clearCache()
 }

@@ -4,9 +4,11 @@ import java.io.File
 
 interface FileReadingService {
 
-    fun readFile(path: String): File?
+    suspend fun readFile(path: String): File?
 
-    fun readAllFilesInDirectory(path: String): List<File>
+    suspend fun readAllDirectoriesInDirectory(path: String): List<File>
 
-    fun fileExists(path: String): Boolean
+    suspend fun readAllFilesInDirectory(path: String): List<File>
+
+    suspend fun fileExists(path: String): Boolean
 }

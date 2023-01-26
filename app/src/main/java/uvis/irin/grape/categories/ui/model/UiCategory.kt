@@ -2,21 +2,20 @@ package uvis.irin.grape.categories.ui.model
 
 import android.graphics.Bitmap
 import uvis.irin.grape.categories.domain.model.DomainCategory
-import uvis.irin.grape.core.extension.capitalize
 
 data class UiCategory(
     val path: String,
     val isFirstCategory: Boolean,
     val isFinalCategory: Boolean,
-    val bitmap: Bitmap,
+    val bitmap: Bitmap?,
 ) {
     val name: String
         get() = categoryPathToName(path)
 }
 
 fun DomainCategory.toUiCategory(
-    isFirstCategory: Boolean,
-    bitmap: Bitmap
+    isFirstCategory: Boolean = false,
+    bitmap: Bitmap? = null,
 ) = UiCategory(
     path = this.path,
     isFirstCategory = isFirstCategory,
@@ -24,9 +23,13 @@ fun DomainCategory.toUiCategory(
     bitmap = bitmap,
 )
 
+fun UiCategory.toDomainCategory() = DomainCategory(
+    path = this.path,
+    isFinalCategory = this.isFinalCategory,
+)
+
 private fun categoryPathToName(path: String): String {
     return path
         .substringAfterLast('/')
         .substringAfterLast('_')
-        .capitalize()
 }
