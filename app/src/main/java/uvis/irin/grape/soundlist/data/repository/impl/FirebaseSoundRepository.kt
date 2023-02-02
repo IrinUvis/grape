@@ -50,6 +50,6 @@ class FirebaseSoundRepository @Inject constructor(
 }
 
 fun StorageReference.toSound() = Sound(
-    name = this.name,
+    name = this.name.substringAfter('_'),
     path = this.path,
 )

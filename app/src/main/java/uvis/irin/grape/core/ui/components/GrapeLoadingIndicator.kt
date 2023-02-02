@@ -39,7 +39,7 @@ fun GrapeLoadingIndicator(
             .graphicsLayer {
                 rotationZ = rotationAngle
             },
-        painter = painterResource(R.drawable.smutny_2),
+        painter = painterResource(R.drawable.loading_lichtman),
         contentDescription = null,
     )
 }
