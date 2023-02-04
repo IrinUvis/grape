@@ -15,37 +15,43 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uvis.irin.grape.R
 import uvis.irin.grape.categories.ui.model.UiCategory
-import uvis.irin.grape.core.android.service.file.FileDeletingService
-import uvis.irin.grape.core.android.service.file.FileReadingService
-import uvis.irin.grape.core.android.service.file.FileSharingService
-import uvis.irin.grape.core.android.service.file.FileWritingService
 import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.navigation.SOUND_LIST_ARG
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
-import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
+import uvis.irin.grape.soundlist.domain.usecase.ClearCachedSoundsUseCase
+import uvis.irin.grape.soundlist.domain.usecase.CreateCacheSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.DeleteLocalSoundsNotPresentInListUseCase
+import uvis.irin.grape.soundlist.domain.usecase.DeleteSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundFileForPathUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundsForPathUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchSoundByteArrayForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
+import uvis.irin.grape.soundlist.domain.usecase.GetFileExistsUseCase
+import uvis.irin.grape.soundlist.domain.usecase.SaveSoundLocallyUseCase
+import uvis.irin.grape.soundlist.domain.usecase.ShareSoundUseCase
 import uvis.irin.grape.soundlist.ui.model.DownloadState
 import uvis.irin.grape.soundlist.ui.model.UiSound
+import uvis.irin.grape.soundlist.ui.model.toDomainSound
 import uvis.irin.grape.soundlist.ui.model.toUiSound
 
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val fetchSoundsForPathUseCase: FetchSoundsForPathUseCase,
-    private val fetchByteArrayForPathUseCase: FetchByteArrayForPathUseCase,
-    private val fileSharingService: FileSharingService,
-    private val fileWritingService: FileWritingService,
-    private val fileReadingService: FileReadingService,
-    private val fileDeletingService: FileDeletingService,
+    private val fetchSoundByteArrayForPathUseCase: FetchSoundByteArrayForPathUseCase,
+    private val fetchLocalSoundsForPathUseCase: FetchLocalSoundsForPathUseCase,
+    private val fetchLocalSoundFileForPathUseCase: FetchLocalSoundFileForPathUseCase,
+    private val saveSoundLocallyUseCase: SaveSoundLocallyUseCase,
+    private val deleteSoundFileUseCase: DeleteSoundFileUseCase,
+    private val deleteLocalSoundsNotPresentInListUseCase: DeleteLocalSoundsNotPresentInListUseCase,
+    private val clearCachedSoundsUseCase: ClearCachedSoundsUseCase,
+    private val createCacheSoundFileUseCase: CreateCacheSoundFileUseCase,
+    private val shareSoundUseCase: ShareSoundUseCase,
+    private val getFileExistsUseCase: GetFileExistsUseCase,
 ) : ViewModel() {
-
-    companion object {
-        private const val MP3_MIME_TYPE = "audio/mp3"
-    }
-
     private val mediaPlayer = MediaPlayer()
 
     private val categoryPath = (checkNotNull(savedStateHandle[SOUND_LIST_ARG]) as String)
@@ -100,7 +106,7 @@ class SoundListViewModel @Inject constructor(
 
                 _viewState.value.sounds?.let { sounds ->
                     val nonDownloadedSounds =
-                        sounds.filter { !fileReadingService.fileExists(it.path) }
+                        sounds.filter { !getFileExistsUseCase(it.path) }
 
                     nonDownloadedSounds.map { downloadSoundAndSaveIt(it) }
                 }
@@ -110,7 +116,7 @@ class SoundListViewModel @Inject constructor(
                 }
             } else {
                 _viewState.value.sounds?.let { sounds ->
-                    val downloadedSounds = sounds.filter { fileReadingService.fileExists(it.path) }
+                    val downloadedSounds = sounds.filter { getFileExistsUseCase(it.path) }
 
                     downloadedSounds.map { removeSoundFile(it) }
                 }
@@ -126,9 +132,9 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             var fileToPlay = sound.localFile
             if (fileToPlay == null) {
-                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                when (val result = fetchSoundByteArrayForPathUseCase(sound.path)) {
                     is FetchByteArrayForPathResult.Success -> {
-                        fileToPlay = clearCacheAndCreateCachedFile(sound, result.bytes)
+                        fileToPlay = clearCacheAndCreateCachedFile(result.bytes)
                     }
                     is FetchByteArrayForPathResult.Failure -> {
                         _viewState.update {
@@ -163,9 +169,9 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             var fileToShare = sound.localFile
             if (fileToShare == null) {
-                when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+                when (val result = fetchSoundByteArrayForPathUseCase(sound.path)) {
                     is FetchByteArrayForPathResult.Success -> {
-                        fileToShare = clearCacheAndCreateCachedFile(sound, result.bytes)
+                        fileToShare = clearCacheAndCreateCachedFile(result.bytes)
                     }
                     is FetchByteArrayForPathResult.Failure -> {
                         _viewState.update {
@@ -177,11 +183,8 @@ class SoundListViewModel @Inject constructor(
                 }
             }
 
-            fileToShare?.let {
-                fileSharingService.shareFile(
-                    fileToShare,
-                    mimeType = MP3_MIME_TYPE
-                )
+            fileToShare?.let { soundFile ->
+                shareSoundUseCase(soundFile)
             }
         }
     }
@@ -219,31 +222,20 @@ class SoundListViewModel @Inject constructor(
                 viewStateForInitiallyLoadedSounds(sounds)
             }
             is FetchSoundsForPathResult.Failure -> {
-                val offlineSounds = readSoundsAvailableOffline()
+                val offlineSounds =
+                    fetchLocalSoundsForPathUseCase(categoryPath).map { it.toUiSound() }
 
                 if (offlineSounds.isEmpty()) {
                     viewStateForFetchSoundsForPathFailure(
                         result = result
                     )
                 } else {
-                    val sounds = offlineSounds.map { it.toUiSound() }
-
-                    viewStateForInitiallyLoadedSounds(sounds)
+                    viewStateForInitiallyLoadedSounds(offlineSounds)
                 }
             }
         }
 
-        _viewState.update {
-            newViewState
-        }
-    }
-
-    private suspend fun readSoundsAvailableOffline(): List<File> {
-        val path = _viewState.value.category.path
-
-        val allFiles = fileReadingService.readAllFilesInDirectory(path)
-
-        return allFiles.filter { it.extension == "mp3" }
+        _viewState.update { newViewState }
     }
 
     private suspend fun downloadSoundAndSaveIt(sound: UiSound) {
@@ -260,10 +252,11 @@ class SoundListViewModel @Inject constructor(
             }
         }
 
-        when (val result = fetchByteArrayForPathUseCase(sound.path)) {
+        val soundPath = sound.path
+
+        when (val result = fetchSoundByteArrayForPathUseCase(soundPath)) {
             is FetchByteArrayForPathResult.Success -> {
-                val file =
-                    fileWritingService.writeFileToInternalStorage(sound.path, result.bytes)
+                val file = saveSoundLocallyUseCase(soundPath, result.bytes)
 
                 _viewState.value.sounds?.let { sounds ->
                     val soundIndex = sounds.indexOf(downloadingSound)
@@ -304,11 +297,7 @@ class SoundListViewModel @Inject constructor(
     }
 
     private suspend fun removeSoundFile(sound: UiSound) {
-        val file = fileReadingService.readFile(sound.path)
-
-        if (file != null) {
-            fileDeletingService.deleteFile(file)
-        }
+        deleteSoundFileUseCase(sound.path)
 
         _viewState.value.sounds?.let { sounds ->
             val soundIndex = sounds.indexOf(sound)
@@ -334,24 +323,15 @@ class SoundListViewModel @Inject constructor(
     }
 
     private suspend fun deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds: List<UiSound>) {
-        val path = _viewState.value.category.path
+        val domainSounds = cloudSounds.map { it.toDomainSound() }
 
-        val cloudSoundsNames = cloudSounds.map { it.fileName }
-
-        val files =
-            fileReadingService.readAllFilesInDirectory(path)
-
-        val filesToDelete = files.filter { !cloudSoundsNames.contains(it.name) }
-
-        for (fileToDelete in filesToDelete) {
-            fileDeletingService.deleteFile(fileToDelete)
-        }
+        deleteLocalSoundsNotPresentInListUseCase(categoryPath, domainSounds)
     }
 
-    private suspend fun clearCacheAndCreateCachedFile(sound: UiSound, bytes: ByteArray): File {
-        fileDeletingService.clearCache()
+    private suspend fun clearCacheAndCreateCachedFile(bytes: ByteArray): File {
+        clearCachedSoundsUseCase()
 
-        return fileWritingService.writeFileToCachedStorage(sound.fileName, bytes)
+        return createCacheSoundFileUseCase(bytes)
     }
 
     private fun viewStateWithUpdatedSoundsDownloadState(): SoundListViewState {
@@ -376,13 +356,13 @@ class SoundListViewModel @Inject constructor(
         result: FetchSoundsForPathResult.Success
     ): List<UiSound> {
         return result.sounds.map { it.toUiSound() }.map {
-            val file = fileReadingService.readFile(it.path)
-            val fileDownloaded = file != null
+            val soundFile = fetchLocalSoundFileForPathUseCase(it.path)
+            val fileDownloaded = soundFile != null
             val downloadState =
                 if (fileDownloaded) DownloadState.Downloaded else DownloadState.NotDownloaded
             it.copy(
                 downloadState = downloadState,
-                localFile = file,
+                localFile = soundFile,
             )
         }
     }

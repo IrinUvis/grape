@@ -7,11 +7,11 @@ import uvis.irin.grape.core.data.DataResult
 import uvis.irin.grape.core.data.StorageExceptionError
 import uvis.irin.grape.soundlist.data.repository.SoundRepository
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
-import uvis.irin.grape.soundlist.domain.usecase.FetchByteArrayForPathUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchSoundByteArrayForPathUseCase
 
-class ProdFetchByteArrayForPathUseCase @Inject constructor(
+class ProdFetchSoundByteArrayForPathUseCase @Inject constructor(
     private val soundRepository: SoundRepository,
-) : FetchByteArrayForPathUseCase {
+) : FetchSoundByteArrayForPathUseCase {
     companion object {
         private const val TAG = "ProdFetchDownloadUrlForPathUseCase"
     }
