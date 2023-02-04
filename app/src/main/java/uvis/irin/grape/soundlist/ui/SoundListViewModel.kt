@@ -74,9 +74,7 @@ class SoundListViewModel @Inject constructor(
     val viewState: StateFlow<SoundListViewState> = _viewState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            loadSounds()
-        }
+        viewModelScope.launch { loadSounds() }
     }
 
     fun downloadOrRemoveSound(sound: UiSound) {
@@ -89,9 +87,7 @@ class SoundListViewModel @Inject constructor(
                 removeSoundFile(sound)
             }
 
-            _viewState.update {
-                viewStateWithUpdatedSoundsDownloadState()
-            }
+            _viewState.update { viewStateWithUpdatedSoundsDownloadState() }
         }
     }
 
@@ -99,21 +95,16 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             if (_viewState.value.soundsDownloadState == DownloadState.NotDownloaded) {
                 _viewState.update {
-                    it.copy(
-                        soundsDownloadState = DownloadState.Downloading,
-                    )
+                    it.copy(soundsDownloadState = DownloadState.Downloading)
                 }
 
                 _viewState.value.sounds?.let { sounds ->
-                    val nonDownloadedSounds =
-                        sounds.filter { !getFileExistsUseCase(it.path) }
+                    val nonDownloadedSounds = sounds.filter { !getFileExistsUseCase(it.path) }
 
                     nonDownloadedSounds.map { downloadSoundAndSaveIt(it) }
                 }
 
-                _viewState.update {
-                    viewStateWithUpdatedSoundsDownloadState()
-                }
+                _viewState.update { viewStateWithUpdatedSoundsDownloadState() }
             } else {
                 _viewState.value.sounds?.let { sounds ->
                     val downloadedSounds = sounds.filter { getFileExistsUseCase(it.path) }
@@ -121,9 +112,7 @@ class SoundListViewModel @Inject constructor(
                     downloadedSounds.map { removeSoundFile(it) }
                 }
 
-                _viewState.update {
-                    viewStateWithUpdatedSoundsDownloadState()
-                }
+                _viewState.update { viewStateWithUpdatedSoundsDownloadState() }
             }
         }
     }
@@ -137,11 +126,7 @@ class SoundListViewModel @Inject constructor(
                         fileToPlay = clearCacheAndCreateCachedFile(result.bytes)
                     }
                     is FetchByteArrayForPathResult.Failure -> {
-                        _viewState.update {
-                            viewStateForFetchByteArrayForPathFailure(
-                                result = result,
-                            )
-                        }
+                        _viewState.update { viewStateForFetchByteArrayForPathFailure(result) }
                     }
                 }
             }
@@ -153,15 +138,9 @@ class SoundListViewModel @Inject constructor(
     fun toggleFavouriteSound(sound: UiSound) {
         _viewState.value.sounds?.let { sounds ->
             val soundIndex = sounds.indexOf(sound)
-            val newSound = sound.copy(
-                isFavourite = !sound.isFavourite
-            )
+            val newSound = sound.copy(isFavourite = !sound.isFavourite)
 
-            _viewState.update {
-                it.copy(
-                    sounds = sounds.withItemAtIndex(newSound, soundIndex),
-                )
-            }
+            _viewState.update { it.copy(sounds = sounds.withItemAtIndex(newSound, soundIndex)) }
         }
     }
 
@@ -174,28 +153,19 @@ class SoundListViewModel @Inject constructor(
                         fileToShare = clearCacheAndCreateCachedFile(result.bytes)
                     }
                     is FetchByteArrayForPathResult.Failure -> {
-                        _viewState.update {
-                            viewStateForFetchByteArrayForPathFailure(
-                                result = result,
-                            )
-                        }
+                        _viewState.update { viewStateForFetchByteArrayForPathFailure(result) }
                     }
                 }
             }
 
-            fileToShare?.let { soundFile ->
-                shareSoundUseCase(soundFile)
-            }
+            fileToShare?.let { soundFile -> shareSoundUseCase(soundFile) }
         }
     }
 
     fun retryLoadingSounds() {
         viewModelScope.launch {
             _viewState.update {
-                it.copy(
-                    soundsLoadingState = SoundsLoadingState.Loading,
-                    errorMessage = null
-                )
+                it.copy(soundsLoadingState = SoundsLoadingState.Loading, errorMessage = null)
             }
 
             loadSounds()
@@ -203,11 +173,7 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun clearErrorMessage() {
-        _viewState.update {
-            it.copy(
-                errorMessage = null
-            )
-        }
+        _viewState.update { it.copy(errorMessage = null) }
     }
 
     private suspend fun loadSounds() {
@@ -217,7 +183,7 @@ class SoundListViewModel @Inject constructor(
             is FetchSoundsForPathResult.Success -> {
                 val sounds = soundsForFetchSoundsForPathSuccess(result)
 
-                deleteSoundsNotPresentInTheCloudFromInternalStorage(cloudSounds = sounds)
+                deleteSoundsNotPresentInTheCloudFromInternalStorage(sounds)
 
                 viewStateForInitiallyLoadedSounds(sounds)
             }
@@ -226,9 +192,7 @@ class SoundListViewModel @Inject constructor(
                     fetchLocalSoundsForPathUseCase(categoryPath).map { it.toUiSound() }
 
                 if (offlineSounds.isEmpty()) {
-                    viewStateForFetchSoundsForPathFailure(
-                        result = result
-                    )
+                    viewStateForFetchSoundsForPathFailure(result)
                 } else {
                     viewStateForInitiallyLoadedSounds(offlineSounds)
                 }
@@ -239,15 +203,16 @@ class SoundListViewModel @Inject constructor(
     }
 
     private suspend fun downloadSoundAndSaveIt(sound: UiSound) {
-        val downloadingSound = sound.copy(
-            downloadState = DownloadState.Downloading,
-        )
+        val downloadingSound = sound.copy(downloadState = DownloadState.Downloading)
         _viewState.value.sounds?.let { sounds ->
             val soundIndex = sounds.indexOf(sound)
 
             _viewState.update {
                 it.copy(
-                    sounds = sounds.withItemAtIndex(downloadingSound, soundIndex),
+                    sounds = sounds.withItemAtIndex(
+                        downloadingSound,
+                        soundIndex
+                    )
                 )
             }
         }
@@ -308,7 +273,10 @@ class SoundListViewModel @Inject constructor(
 
             _viewState.update {
                 it.copy(
-                    sounds = sounds.withItemAtIndex(notDownloadedSound, soundIndex),
+                    sounds = sounds.withItemAtIndex(
+                        notDownloadedSound,
+                        soundIndex
+                    )
                 )
             }
         }
@@ -336,20 +304,14 @@ class SoundListViewModel @Inject constructor(
 
     private fun viewStateWithUpdatedSoundsDownloadState(): SoundListViewState {
         return _viewState.value.sounds?.let { sounds ->
-            _viewState.value.copy(
-                soundsDownloadState = soundsDownloadStateForSounds(sounds),
-            )
+            _viewState.value.copy(soundsDownloadState = soundsDownloadStateForSounds(sounds))
         } ?: _viewState.value
     }
 
     private fun soundsDownloadStateForSounds(sounds: List<UiSound>): DownloadState {
         val allDownloaded = sounds.all { it.downloadState == DownloadState.Downloaded }
 
-        return if (allDownloaded) {
-            DownloadState.Downloaded
-        } else {
-            DownloadState.NotDownloaded
-        }
+        return if (allDownloaded) DownloadState.Downloaded else DownloadState.NotDownloaded
     }
 
     private suspend fun soundsForFetchSoundsForPathSuccess(
@@ -360,10 +322,7 @@ class SoundListViewModel @Inject constructor(
             val fileDownloaded = soundFile != null
             val downloadState =
                 if (fileDownloaded) DownloadState.Downloaded else DownloadState.NotDownloaded
-            it.copy(
-                downloadState = downloadState,
-                localFile = soundFile,
-            )
+            it.copy(downloadState = downloadState, localFile = soundFile)
         }
     }
 
