@@ -65,10 +65,6 @@ class SoundListViewModel @Inject constructor(
                 isFinalCategory = true,
                 bitmap = null,
             ),
-            soundsLoadingState = SoundsLoadingState.Loading,
-            sounds = null,
-            soundsDownloadState = DownloadState.NotDownloaded,
-            errorMessage = null
         )
     )
     val viewState: StateFlow<SoundListViewState> = _viewState.asStateFlow()
@@ -169,6 +165,30 @@ class SoundListViewModel @Inject constructor(
             }
 
             loadSounds()
+        }
+    }
+
+    fun clearSearchQuery() {
+        changeSearchQuery("")
+    }
+
+    fun changeSearchQuery(newText: String) {
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    searchQuery = UiText.StringText(newText)
+                )
+            }
+        }
+    }
+
+    fun toggleSearchInput() {
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    isSearchExpanded = !it.isSearchExpanded
+                )
+            }
         }
     }
 

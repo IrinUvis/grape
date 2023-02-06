@@ -7,10 +7,12 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 
 data class SoundListViewState(
     val category: UiCategory,
-    val soundsLoadingState: SoundsLoadingState,
-    val sounds: List<UiSound>?,
-    val soundsDownloadState: DownloadState,
-    val errorMessage: UiText?,
+    val soundsLoadingState: SoundsLoadingState = SoundsLoadingState.Loading,
+    val searchQuery: UiText = UiText.StringText(""),
+    val sounds: List<UiSound>? = null,
+    val soundsDownloadState: DownloadState = DownloadState.NotDownloaded,
+    val isSearchExpanded: Boolean = false,
+    val errorMessage: UiText? = null,
 )
 
 enum class SoundsLoadingState {

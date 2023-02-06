@@ -32,7 +32,9 @@ fun SoundListContent(
     viewState: SoundListViewState,
     onNavigationIconClicked: () -> Unit,
     onDownloadForOfflineIconClicked: () -> Unit,
-    onSettingsIconClicked: () -> Unit,
+    onClearSearchQueryClicked: () -> Unit,
+    onSearchIconClicked: () -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
     onSoundButtonClicked: (UiSound) -> Unit,
     onDownloadSoundClicked: (UiSound) -> Unit,
     onFavouriteButtonClicked: (UiSound) -> Unit,
@@ -49,11 +51,15 @@ fun SoundListContent(
         topBar = {
             SoundListTopAppBar(
                 category = viewState.category,
+                searchQuery = viewState.searchQuery.getString(),
+                isSearchExpanded = viewState.isSearchExpanded,
                 soundsLoaded = viewState.soundsLoadingState == SoundsLoadingState.Loaded,
                 soundsDownloadState = viewState.soundsDownloadState,
                 onNavigationIconClicked = onNavigationIconClicked,
                 onDownloadForOfflineIconClicked = onDownloadForOfflineIconClicked,
-                onSettingsIconClicked = onSettingsIconClicked,
+                onClearSearchQueryClicked = onClearSearchQueryClicked,
+                onSearchToggleIconClicked = onSearchIconClicked,
+                onSearchQueryChanged = onSearchQueryChanged,
                 scrollBehavior = scrollBehavior,
             )
         },

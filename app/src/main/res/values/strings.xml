@@ -22,4 +22,8 @@
     <string name="exceededFreeTierAndNoDownloadedCategoriesErrorMessage">Can\'t load any more sounds this month and you don\'t have any categories downloaded</string>
     <string name="unexpectedAndNoDownloadedCategoriesErrorMessage">An unexpected error has occurred and you don\'t have any categories downloaded</string>
     <string name="unknownAndNoDownloadedCategoriesErrorMessage">An unknown error has occurred and you don\'t have any categories downloaded</string>
+    <string name="searchButtonContentDescription">Search sounds</string>
+    <string name="searchSoundsHint">Search sounds</string>
+    <string name="closeSearchButtonContentDescription">Stop searching</string>
+    <string name="clearTextButtonContentDescription">Clear text</string>
 </resources>

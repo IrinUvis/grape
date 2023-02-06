@@ -23,7 +23,6 @@ fun NavGraphBuilder.soundListScreen(
     ) {
         SoundListScreen(
             navigateUp = { navController.navigateUp() },
-            navigateToSettings = { }
         )
     }
 }

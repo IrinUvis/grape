@@ -8,7 +8,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun SoundListScreen(
     viewModel: SoundListViewModel = hiltViewModel(),
     navigateUp: () -> Unit,
-    navigateToSettings: () -> Unit,
 ) {
     val viewState = viewModel.viewState.collectAsState()
 
@@ -16,7 +15,9 @@ fun SoundListScreen(
         viewState = viewState.value,
         onNavigationIconClicked = navigateUp,
         onDownloadForOfflineIconClicked = viewModel::downloadOrRemoveAllSounds,
-        onSettingsIconClicked = navigateToSettings,
+        onClearSearchQueryClicked = viewModel::clearSearchQuery,
+        onSearchIconClicked = viewModel::toggleSearchInput,
+        onSearchQueryChanged = viewModel::changeSearchQuery,
         onDownloadSoundClicked = viewModel::downloadOrRemoveSound,
         onSoundButtonClicked = viewModel::playSound,
         onFavouriteButtonClicked = viewModel::toggleFavouriteSound,
