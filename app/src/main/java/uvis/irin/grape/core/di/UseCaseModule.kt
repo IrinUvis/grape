@@ -16,10 +16,13 @@ import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchImageByteArrayFor
 import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchLocalCategoriesForPathUseCase
 import uvis.irin.grape.categories.domain.usecase.impl.ProdFetchLocalImageByteArrayForPathUseCase
 import uvis.irin.grape.categories.domain.usecase.impl.ProdSaveImageByteArrayLocallyUseCase
+import uvis.irin.grape.soundlist.domain.usecase.AddFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.ClearCachedSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.CreateCacheSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.DeleteFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteLocalSoundsNotPresentInListUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchFavouriteSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundFileForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundByteArrayForPathUseCase
@@ -27,10 +30,13 @@ import uvis.irin.grape.soundlist.domain.usecase.FetchSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.GetFileExistsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.SaveSoundLocallyUseCase
 import uvis.irin.grape.soundlist.domain.usecase.ShareSoundUseCase
+import uvis.irin.grape.soundlist.domain.usecase.impl.ProdAddFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdClearCachedSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdCreateCacheSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.impl.ProdDeleteFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdDeleteLocalSoundsNotPresentInListUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdDeleteSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchFavouriteSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchLocalSoundFileForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchLocalSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.impl.ProdFetchSoundByteArrayForPathUseCase
@@ -47,6 +53,11 @@ abstract class UseCaseModule {
     // ------------- SOUNDS ----------------
 
     @Binds
+    abstract fun bindAddFavouriteSoundUseCase(
+        addFavouriteSoundUseCase: ProdAddFavouriteSoundUseCase
+    ): AddFavouriteSoundUseCase
+
+    @Binds
     abstract fun bindClearCachedSoundsUseCase(
         clearCachedSoundsUseCase: ProdClearCachedSoundsUseCase
     ): ClearCachedSoundsUseCase
@@ -57,6 +68,11 @@ abstract class UseCaseModule {
     ): CreateCacheSoundFileUseCase
 
     @Binds
+    abstract fun bindDeleteFavouriteSoundUseCase(
+        deleteFavouriteSoundUseCase: ProdDeleteFavouriteSoundUseCase
+    ): DeleteFavouriteSoundUseCase
+
+    @Binds
     abstract fun bindDeleteLocalSoundsNotPresentInListUseCase(
         deleteLocalSoundsNotPresentInListUseCase: ProdDeleteLocalSoundsNotPresentInListUseCase
     ): DeleteLocalSoundsNotPresentInListUseCase
@@ -65,6 +81,11 @@ abstract class UseCaseModule {
     abstract fun bindDeleteSoundFileUseCase(
         deleteSoundFileUseCase: ProdDeleteSoundFileUseCase
     ): DeleteSoundFileUseCase
+
+    @Binds
+    abstract fun bindFetchFavouriteSoundsUseCase(
+        fetchFavouriteSoundsUseCase: ProdFetchFavouriteSoundsUseCase
+    ): FetchFavouriteSoundsUseCase
 
     @Binds
     abstract fun bindFetchLocalSoundFileForPathUseCase(

@@ -21,10 +21,13 @@ import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.navigation.SOUND_LIST_ARG
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
+import uvis.irin.grape.soundlist.domain.usecase.AddFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.ClearCachedSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.CreateCacheSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.DeleteFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteLocalSoundsNotPresentInListUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteSoundFileUseCase
+import uvis.irin.grape.soundlist.domain.usecase.FetchFavouriteSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundFileForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchLocalSoundsForPathUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchSoundByteArrayForPathUseCase
@@ -52,6 +55,9 @@ class SoundListViewModel @Inject constructor(
     private val createCacheSoundFileUseCase: CreateCacheSoundFileUseCase,
     private val shareSoundUseCase: ShareSoundUseCase,
     private val getFileExistsUseCase: GetFileExistsUseCase,
+    private val addFavouriteSoundUseCase: AddFavouriteSoundUseCase,
+    private val deleteFavouriteSoundUseCase: DeleteFavouriteSoundUseCase,
+    private val fetchFavouriteSoundsUseCase: FetchFavouriteSoundsUseCase,
 ) : ViewModel() {
     private val mediaPlayer = MediaPlayer()
 
@@ -133,11 +139,15 @@ class SoundListViewModel @Inject constructor(
     }
 
     fun toggleFavouriteSound(sound: UiSound) {
-        _viewState.value.sounds?.let { sounds ->
-            val soundIndex = sounds.indexOf(sound)
-            val newSound = sound.copy(isFavourite = !sound.isFavourite)
+        viewModelScope.launch {
+            _viewState.value.sounds?.let { sounds ->
+                addToOrRemoveFromFavourites(sound)
 
-            _viewState.update { it.copy(sounds = sounds.withItemAtIndex(newSound, soundIndex)) }
+                val soundIndex = sounds.indexOf(sound)
+                val newSound = sound.copy(isFavourite = !sound.isFavourite)
+
+                _viewState.update { it.copy(sounds = sounds.withItemAtIndex(newSound, soundIndex)) }
+            }
         }
     }
 
@@ -210,9 +220,13 @@ class SoundListViewModel @Inject constructor(
     private suspend fun loadSounds() {
         val path = _viewState.value.category.path
 
+        val favouriteSoundsPaths = fetchFavouriteSoundsUseCase(path).map { it.path }
+
         val newViewState = when (val result = fetchSoundsForPathUseCase(path)) {
             is FetchSoundsForPathResult.Success -> {
-                val sounds = soundsForFetchSoundsForPathSuccess(result)
+                val sounds = soundsForFetchSoundsForPathSuccess(result).map {
+                    it.copy(isFavourite = favouriteSoundsPaths.contains(it.path))
+                }
 
                 deleteSoundsNotPresentInTheCloudFromInternalStorage(sounds)
 
@@ -220,7 +234,9 @@ class SoundListViewModel @Inject constructor(
             }
             is FetchSoundsForPathResult.Failure -> {
                 val offlineSounds =
-                    fetchLocalSoundsForPathUseCase(categoryPath).map { it.toUiSound() }
+                    fetchLocalSoundsForPathUseCase(categoryPath).map { it.toUiSound() }.map {
+                        it.copy(isFavourite = favouriteSoundsPaths.contains(it.path))
+                    }
 
                 if (offlineSounds.isEmpty()) {
                     viewStateForFetchSoundsForPathFailure(result)
@@ -310,6 +326,16 @@ class SoundListViewModel @Inject constructor(
                     )
                 )
             }
+        }
+    }
+
+
+    private suspend fun addToOrRemoveFromFavourites(sound: UiSound) {
+        val path = sound.path
+        if (sound.isFavourite) {
+            deleteFavouriteSoundUseCase(path)
+        } else {
+            addFavouriteSoundUseCase(path)
         }
     }
 
