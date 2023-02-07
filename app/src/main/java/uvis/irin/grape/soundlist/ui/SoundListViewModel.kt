@@ -19,12 +19,14 @@ import uvis.irin.grape.core.extension.withDashesReplacedByForwardSlashes
 import uvis.irin.grape.core.extension.withItemAtIndex
 import uvis.irin.grape.core.ui.helpers.UiText
 import uvis.irin.grape.navigation.SOUND_LIST_ARG
+import uvis.irin.grape.soundlist.domain.model.DomainFavouriteSoundPath
 import uvis.irin.grape.soundlist.domain.model.result.FetchByteArrayForPathResult
 import uvis.irin.grape.soundlist.domain.model.result.FetchSoundsForPathResult
 import uvis.irin.grape.soundlist.domain.usecase.AddFavouriteSoundUseCase
 import uvis.irin.grape.soundlist.domain.usecase.ClearCachedSoundsUseCase
 import uvis.irin.grape.soundlist.domain.usecase.CreateCacheSoundFileUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteFavouriteSoundUseCase
+import uvis.irin.grape.soundlist.domain.usecase.DeleteFavouriteSoundsNotPresentInListUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteLocalSoundsNotPresentInListUseCase
 import uvis.irin.grape.soundlist.domain.usecase.DeleteSoundFileUseCase
 import uvis.irin.grape.soundlist.domain.usecase.FetchFavouriteSoundsUseCase
@@ -58,6 +60,7 @@ class SoundListViewModel @Inject constructor(
     private val addFavouriteSoundUseCase: AddFavouriteSoundUseCase,
     private val deleteFavouriteSoundUseCase: DeleteFavouriteSoundUseCase,
     private val fetchFavouriteSoundsUseCase: FetchFavouriteSoundsUseCase,
+    private val deleteFavouriteSoundsNotPresentInListUseCase: DeleteFavouriteSoundsNotPresentInListUseCase
 ) : ViewModel() {
     private val mediaPlayer = MediaPlayer()
 
@@ -230,6 +233,8 @@ class SoundListViewModel @Inject constructor(
 
                 deleteSoundsNotPresentInTheCloudFromInternalStorage(sounds)
 
+                deleteFavouriteSoundsNotPresentInTheCloudFromRoom(sounds, favouriteSoundsPaths)
+
                 viewStateForInitiallyLoadedSounds(sounds)
             }
             is FetchSoundsForPathResult.Failure -> {
@@ -351,6 +356,16 @@ class SoundListViewModel @Inject constructor(
         val domainSounds = cloudSounds.map { it.toDomainSound() }
 
         deleteLocalSoundsNotPresentInListUseCase(categoryPath, domainSounds)
+    }
+
+    private suspend fun deleteFavouriteSoundsNotPresentInTheCloudFromRoom(
+        cloudSounds: List<UiSound>,
+        favouriteSoundsPaths: List<String>
+    ) {
+        val domainSounds = cloudSounds.map { it.toDomainSound() }
+        val domainFavouriteSoundPaths = favouriteSoundsPaths.map { DomainFavouriteSoundPath(path = it) }
+
+        deleteFavouriteSoundsNotPresentInListUseCase(domainSounds, domainFavouriteSoundPaths)
     }
 
     private suspend fun clearCacheAndCreateCachedFile(bytes: ByteArray): File {
