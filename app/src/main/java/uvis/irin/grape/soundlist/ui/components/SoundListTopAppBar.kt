@@ -21,6 +21,7 @@ import uvis.irin.grape.soundlist.ui.model.DownloadState
 fun SoundListTopAppBar(
     modifier: Modifier = Modifier,
     category: UiCategory,
+    showOnlyFavourites: Boolean,
     searchQuery: String,
     isSearchExpanded: Boolean,
     soundsLoaded: Boolean,
@@ -30,6 +31,7 @@ fun SoundListTopAppBar(
     onClearSearchQueryClicked: () -> Unit,
     onSearchToggleIconClicked: () -> Unit,
     onSearchQueryChanged: (String) -> Unit,
+    onShowOnlyFavouritesClicked: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     Column {
@@ -87,6 +89,12 @@ fun SoundListTopAppBar(
                         )
                     }
                 }
+
+                FavouriteToggleButton(
+                    isFavourite = showOnlyFavourites,
+                    onCheckedChange = { onShowOnlyFavouritesClicked() },
+                    contentDescription = "Show only favourite sounds"
+                )
             },
             scrollBehavior = scrollBehavior,
         )

@@ -37,6 +37,7 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 import uvis.irin.grape.soundlist.ui.model.toDomainSound
 import uvis.irin.grape.soundlist.ui.model.toUiSound
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class SoundListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -187,6 +188,16 @@ class SoundListViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     isSearchExpanded = !it.isSearchExpanded
+                )
+            }
+        }
+    }
+
+    fun toggleShowOnlyFavourites() {
+        viewModelScope.launch {
+            _viewState.update {
+                it.copy(
+                    showOnlyFavourites = !it.showOnlyFavourites,
                 )
             }
         }

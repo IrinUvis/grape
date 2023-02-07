@@ -18,6 +18,7 @@ fun SoundListScreen(
         onClearSearchQueryClicked = viewModel::clearSearchQuery,
         onSearchIconClicked = viewModel::toggleSearchInput,
         onSearchQueryChanged = viewModel::changeSearchQuery,
+        onShowOnlyFavouritesClicked = viewModel::toggleShowOnlyFavourites,
         onDownloadSoundClicked = viewModel::downloadOrRemoveSound,
         onSoundButtonClicked = viewModel::playSound,
         onFavouriteButtonClicked = viewModel::toggleFavouriteSound,

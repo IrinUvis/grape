@@ -35,6 +35,7 @@ fun SoundListContent(
     onClearSearchQueryClicked: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onSearchQueryChanged: (String) -> Unit,
+    onShowOnlyFavouritesClicked: () -> Unit,
     onSoundButtonClicked: (UiSound) -> Unit,
     onDownloadSoundClicked: (UiSound) -> Unit,
     onFavouriteButtonClicked: (UiSound) -> Unit,
@@ -51,6 +52,7 @@ fun SoundListContent(
         topBar = {
             SoundListTopAppBar(
                 category = viewState.category,
+                showOnlyFavourites = viewState.showOnlyFavourites,
                 searchQuery = viewState.searchQuery,
                 isSearchExpanded = viewState.isSearchExpanded,
                 soundsLoaded = viewState.soundsLoadingState == SoundsLoadingState.Loaded,
@@ -60,6 +62,7 @@ fun SoundListContent(
                 onClearSearchQueryClicked = onClearSearchQueryClicked,
                 onSearchToggleIconClicked = onSearchIconClicked,
                 onSearchQueryChanged = onSearchQueryChanged,
+                onShowOnlyFavouritesClicked = onShowOnlyFavouritesClicked,
                 scrollBehavior = scrollBehavior,
             )
         },
