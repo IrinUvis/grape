@@ -3,6 +3,7 @@ package uvis.irin.grape.soundlist.domain.usecase.impl
 import android.util.Log
 import com.google.firebase.storage.StorageException
 import javax.inject.Inject
+import uvis.irin.grape.core.comparator.SoundFileNameComparator
 import uvis.irin.grape.core.data.DataResult
 import uvis.irin.grape.core.data.StorageExceptionError
 import uvis.irin.grape.soundlist.data.repository.SoundRepository
@@ -20,7 +21,9 @@ class ProdFetchSoundsForPathUseCase @Inject constructor(
     override suspend fun invoke(path: String): FetchSoundsForPathResult {
         return when (val result = soundRepository.fetchSoundsForPath(path)) {
             is DataResult.Success -> {
-                val sounds = result.data.map { it.toDomainSound() }
+                val sounds = result.data.sortedWith { sound1, sound2 ->
+                    SoundFileNameComparator().compare(sound1.fileName, sound2.fileName)
+                }.map { it.toDomainSound() }
                 FetchSoundsForPathResult.Success(sounds)
             }
             is DataResult.Failure -> {

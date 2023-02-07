@@ -239,9 +239,18 @@ class SoundListViewModel @Inject constructor(
             }
             is FetchSoundsForPathResult.Failure -> {
                 val offlineSounds =
-                    fetchLocalSoundsForPathUseCase(categoryPath).map { it.toUiSound() }.map {
-                        it.copy(isFavourite = favouriteSoundsPaths.contains(it.path))
-                    }
+                    fetchLocalSoundsForPathUseCase(categoryPath)
+                        .map {
+                            val isFavourite = favouriteSoundsPaths.contains(it.path)
+                            val downloadState = DownloadState.Downloaded
+                            val localFile = fetchLocalSoundFileForPathUseCase(it.path)
+
+                            it.toUiSound(
+                                isFavourite = isFavourite,
+                                downloadState = downloadState,
+                                localFile = localFile
+                            )
+                        }
 
                 if (offlineSounds.isEmpty()) {
                     viewStateForFetchSoundsForPathFailure(result)
@@ -363,7 +372,8 @@ class SoundListViewModel @Inject constructor(
         favouriteSoundsPaths: List<String>
     ) {
         val domainSounds = cloudSounds.map { it.toDomainSound() }
-        val domainFavouriteSoundPaths = favouriteSoundsPaths.map { DomainFavouriteSoundPath(path = it) }
+        val domainFavouriteSoundPaths =
+            favouriteSoundsPaths.map { DomainFavouriteSoundPath(path = it) }
 
         deleteFavouriteSoundsNotPresentInListUseCase(domainSounds, domainFavouriteSoundPaths)
     }

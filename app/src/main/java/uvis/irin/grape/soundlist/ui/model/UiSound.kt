@@ -13,12 +13,16 @@ data class UiSound(
     val name get() = fileName.substringAfter('_').substringBeforeLast('.')
 }
 
-fun DomainSound.toUiSound() = UiSound(
+fun DomainSound.toUiSound(
+    isFavourite: Boolean = false,
+    downloadState: DownloadState = DownloadState.NotDownloaded,
+    localFile: File? = null,
+) = UiSound(
     fileName = this.fileName,
     path = this.path,
-    isFavourite = false,
-    downloadState = DownloadState.NotDownloaded,
-    localFile = null,
+    isFavourite = isFavourite,
+    downloadState = downloadState,
+    localFile = localFile,
 )
 
 fun UiSound.toDomainSound() = DomainSound(
