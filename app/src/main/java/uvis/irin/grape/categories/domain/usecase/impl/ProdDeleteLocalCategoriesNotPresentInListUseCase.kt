@@ -12,7 +12,7 @@ class ProdDeleteLocalCategoriesNotPresentInListUseCase @Inject constructor(
 ) : DeleteLocalCategoriesNotPresentInListUseCase {
 
     override suspend fun invoke(path: String, categoryList: List<DomainCategory>) {
-        val directoryNames = categoryList.map { it.filename }
+        val directoryNames = categoryList.map { it.name }
 
         val localDirectories = fileReadingService.readAllDirectoriesInDirectory(path)
 

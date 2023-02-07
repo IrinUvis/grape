@@ -7,6 +7,7 @@ import uvis.irin.grape.categories.data.repository.CategoryRepository
 import uvis.irin.grape.categories.domain.model.result.FetchCategoriesForPathResult
 import uvis.irin.grape.categories.domain.model.toDomainCategory
 import uvis.irin.grape.categories.domain.usecase.FetchCategoriesForPathUseCase
+import uvis.irin.grape.core.comparator.DirectoryAndFileNameComparator
 import uvis.irin.grape.core.data.DataResult
 import uvis.irin.grape.core.data.StorageExceptionError
 
@@ -20,7 +21,10 @@ class ProdFetchCategoriesForPathUseCase @Inject constructor(
     override suspend fun invoke(path: String): FetchCategoriesForPathResult {
         return when (val result = categoryRepository.fetchCategoriesForPath(path)) {
             is DataResult.Success -> {
-                val categories = result.data.map { it.toDomainCategory() }
+                val categories =
+                    result.data.map { it.toDomainCategory() }.sortedWith { category1, category2 ->
+                        DirectoryAndFileNameComparator().compare(category1.name, category2.name)
+                    }
                 FetchCategoriesForPathResult.Success(categories)
             }
             is DataResult.Failure -> {

@@ -6,7 +6,7 @@ data class DomainCategory(
     val path: String,
     val isFinalCategory: Boolean,
 ) {
-    val filename: String
+    val name: String
         get() = path.substringAfterLast('/')
 }
 
