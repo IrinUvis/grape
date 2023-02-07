@@ -8,12 +8,15 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 data class SoundListViewState(
     val category: UiCategory,
     val soundsLoadingState: SoundsLoadingState = SoundsLoadingState.Loading,
-    val searchQuery: UiText = UiText.StringText(""),
+    val searchQuery: String = "",
     val sounds: List<UiSound>? = null,
     val soundsDownloadState: DownloadState = DownloadState.NotDownloaded,
     val isSearchExpanded: Boolean = false,
     val errorMessage: UiText? = null,
-)
+) {
+    val filteredSounds: List<UiSound>?
+        get() = sounds?.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+}
 
 enum class SoundsLoadingState {
     Loading,

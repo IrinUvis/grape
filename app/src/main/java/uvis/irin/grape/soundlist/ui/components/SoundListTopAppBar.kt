@@ -2,7 +2,6 @@ package uvis.irin.grape.soundlist.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,44 +55,37 @@ fun SoundListTopAppBar(
                 )
             },
             actions = {
-//                AnimatedVisibility(visible = soundsLoaded) {
-//                    AnimatedVisibility(
-//                        visible = !isSearchExpanded,
-//                        exit = ExitTransition.None
-//                    ) {
-//                        DownloadButton(
-//                            downloadState = soundsDownloadState,
-//                            onClick = onDownloadForOfflineIconClicked,
-//                            contentDescription = stringResource(R.string.downloadCategorySoundsButtonContentDescription),
-//                        )
-//                    }
-//                }
-
                 AnimatedVisibility(visible = soundsLoaded) {
-                    if (!isSearchExpanded) {
-                        DownloadButton(
-                            downloadState = soundsDownloadState,
-                            onClick = onDownloadForOfflineIconClicked,
-                            contentDescription = stringResource(R.string.downloadCategorySoundsButtonContentDescription),
-                        )
-                    } else {
-                        ClearTextButton(
-                            onClick = onClearSearchQueryClicked,
-                            contentDescription = stringResource(R.string.clearTextButtonContentDescription)
-                        )
+                    AnimatedContent(targetState = isSearchExpanded) { searchExpanded ->
+                        if (!searchExpanded) {
+                            DownloadButton(
+                                downloadState = soundsDownloadState,
+                                onClick = onDownloadForOfflineIconClicked,
+                                contentDescription = stringResource(
+                                    R.string.downloadCategorySoundsButtonContentDescription
+                                ),
+                            )
+                        } else {
+                            ClearTextButton(
+                                onClick = onClearSearchQueryClicked,
+                                contentDescription = stringResource(R.string.clearTextButtonContentDescription)
+                            )
+                        }
                     }
                 }
 
-                if (isSearchExpanded) {
-                    CloseSearchButton(
-                        onClick = onSearchToggleIconClicked,
-                        contentDescription = stringResource(R.string.closeSearchButtonContentDescription)
-                    )
-                } else {
-                    SearchButton(
-                        onClick = onSearchToggleIconClicked,
-                        contentDescription = stringResource(R.string.searchButtonContentDescription),
-                    )
+                AnimatedContent(targetState = isSearchExpanded) { searchExpanded ->
+                    if (searchExpanded) {
+                        CloseSearchButton(
+                            onClick = onSearchToggleIconClicked,
+                            contentDescription = stringResource(R.string.closeSearchButtonContentDescription)
+                        )
+                    } else {
+                        SearchButton(
+                            onClick = onSearchToggleIconClicked,
+                            contentDescription = stringResource(R.string.searchButtonContentDescription),
+                        )
+                    }
                 }
             },
             scrollBehavior = scrollBehavior,

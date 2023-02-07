@@ -176,7 +176,7 @@ class SoundListViewModel @Inject constructor(
         viewModelScope.launch {
             _viewState.update {
                 it.copy(
-                    searchQuery = UiText.StringText(newText)
+                    searchQuery = newText
                 )
             }
         }

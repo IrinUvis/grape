@@ -51,7 +51,7 @@ fun SoundListContent(
         topBar = {
             SoundListTopAppBar(
                 category = viewState.category,
-                searchQuery = viewState.searchQuery.getString(),
+                searchQuery = viewState.searchQuery,
                 isSearchExpanded = viewState.isSearchExpanded,
                 soundsLoaded = viewState.soundsLoadingState == SoundsLoadingState.Loaded,
                 soundsDownloadState = viewState.soundsDownloadState,
@@ -96,7 +96,7 @@ fun SoundListContent(
                         }
                     }
 
-                    viewState.sounds?.let { sounds ->
+                    viewState.filteredSounds?.let { sounds ->
                         SoundListLoadedContent(
                             sounds = sounds,
                             scrollBehavior = scrollBehavior,
