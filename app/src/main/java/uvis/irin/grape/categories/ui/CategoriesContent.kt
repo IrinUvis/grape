@@ -41,6 +41,7 @@ fun CategoriesContent(
                     viewState.categories?.let { categories ->
                         CategoriesLoadedContent(
                             categories = categories,
+                            isSynchronizing = viewState.isSynchronizing,
                             onCategoryCardClicked = onCategoryCardClicked,
                         )
                     }
