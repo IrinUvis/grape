@@ -7,5 +7,7 @@ interface BitmapEncodingService {
 
     suspend fun byteArrayToBitmap(byteArray: ByteArray): Bitmap
 
-    suspend fun drawableToBitmap(@DrawableRes drawable: Int): Bitmap
+    suspend fun pngDrawableToBitmap(@DrawableRes drawable: Int): Bitmap
+
+    suspend fun xmlDrawableToBitmap(@DrawableRes drawable: Int): Bitmap
 }

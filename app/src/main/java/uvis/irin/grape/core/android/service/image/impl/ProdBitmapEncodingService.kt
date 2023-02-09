@@ -3,6 +3,7 @@ package uvis.irin.grape.core.android.service.image.impl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -21,9 +22,26 @@ class ProdBitmapEncodingService @Inject constructor(
         }
     }
 
-    override suspend fun drawableToBitmap(drawable: Int): Bitmap {
+    override suspend fun pngDrawableToBitmap(drawable: Int): Bitmap {
         return withContext(defaultDispatcher) {
             BitmapFactory.decodeResource(context.resources, drawable)
+        }
+    }
+
+    override suspend fun xmlDrawableToBitmap(drawable: Int): Bitmap {
+        return withContext(defaultDispatcher) {
+            val actualDrawable = context.getDrawable(drawable)!!
+            val canvas = Canvas()
+            val bitmap = Bitmap.createBitmap(
+                actualDrawable.intrinsicWidth,
+                actualDrawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            canvas.setBitmap(bitmap)
+            actualDrawable.setBounds(0, 0, actualDrawable.intrinsicWidth, actualDrawable.intrinsicHeight)
+            actualDrawable.draw(canvas)
+
+            bitmap
         }
     }
 }

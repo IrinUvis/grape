@@ -203,13 +203,8 @@ class CategoriesViewModel @Inject constructor(
     private suspend fun bitmapForFetchImageByteArrayForPathResult(
         result: FetchImageByteArrayForPathResult
     ): Bitmap {
-        return when (result) {
-            is FetchImageByteArrayForPathResult.Success -> {
-                bitmapEncodingService.byteArrayToBitmap(result.bytes)
-            }
-            is FetchImageByteArrayForPathResult.Failure -> {
-                bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
-            }
+        return (result as? FetchImageByteArrayForPathResult.Success)?.bytes.let { byteArray ->
+            byteArrayToBitmap(byteArray)
         }
     }
 
@@ -225,7 +220,7 @@ class CategoriesViewModel @Inject constructor(
         return if (byteArray != null) {
             bitmapEncodingService.byteArrayToBitmap(byteArray)
         } else {
-            bitmapEncodingService.drawableToBitmap(R.drawable.smutny_6)
+            bitmapEncodingService.xmlDrawableToBitmap(R.drawable.baseline_error_outline_24)
         }
     }
 
