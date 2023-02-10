@@ -66,154 +66,142 @@ class CategoriesViewModel @Inject constructor(
 
     fun retryLoadingCategories() {
         viewModelScope.launch {
-            _viewState.update { loadingViewState() }
+            _viewState.update {
+                it.copy(
+                    categoriesLoadingState = CategoriesLoadingState.Loading,
+                    categories = null,
+                    errorMessage = null,
+                )
+            }
 
-            loadCategories()
+            initialRemoteCategoryLoad()
         }
     }
 
-    private suspend fun loadCategories() {
-        coroutineScope {
-            val categories = fetchLocalCategoriesForPathUseCase(categoryPath)
-            when {
-                categories.isNotEmpty() -> {
-                    _viewState.update {
-                        viewStateForLoadedCategories(
-                            categories = categories.map { it.toUiCategory() },
-                            isSynchronizing = true
-                        )
-                    }
-
-                    localImageLoadOfCategories(categories = categories)
-
-                    synchronizeLocalCategoriesWithCloud()
-                }
-                else -> {
-                    initialRemoteCategoryLoad()
-                }
+    private suspend fun loadCategories() = coroutineScope {
+        val localCategories = fetchLocalCategoriesForPathUseCase(categoryPath)
+        when {
+            localCategories.isNotEmpty() -> {
+                fullLocalCategoryLoadWithSynchronization(baseLocalCategories = localCategories)
+            }
+            else -> {
+                initialRemoteCategoryLoad()
             }
         }
     }
 
+    private suspend fun fullLocalCategoryLoadWithSynchronization(baseLocalCategories: List<DomainCategory>) =
+        coroutineScope {
+            // load initially with local categories without images
+            _viewState.update {
+                it.forLoadedCategories(
+                    categories = baseLocalCategories.map { category -> category.toUiCategory() },
+                    isSynchronizing = true,
+                )
+            }
+
+            // load categories with images
+            val localCategoriesWithImages = baseLocalCategories.map { category ->
+                val imageByteArray = fetchLocalImageByteArrayForPathUseCase(category.path)
+                val bitmap = byteArrayToBitmap(imageByteArray)
+                category.toUiCategory(bitmap = bitmap)
+            }
+
+            _viewState.update {
+                it.forLoadedCategories(
+                    categories = localCategoriesWithImages,
+                    isSynchronizing = true,
+                )
+            }
+
+            // load remote categories to synchronize
+            when (val fetchCategoriesResult = fetchCategoriesForPathUseCase(categoryPath)) {
+                is FetchCategoriesForPathResult.Success -> {
+                    val categoriesWithImages =
+                        getCategoriesWithImagesLoadedRemotely(
+                            categories = fetchCategoriesResult.categories.map { it.toUiCategory() }
+                        )
+
+                    deleteLocalCategoriesNotPresentInListUseCase(
+                        path = categoryPath,
+                        categoryList = categoriesWithImages.map { it.toDomainCategory() }
+                    )
+
+                    _viewState.update {
+                        it.forLoadedCategories(
+                            categories = categoriesWithImages,
+                            isSynchronizing = false,
+                        )
+                    }
+                }
+                is FetchCategoriesForPathResult.Failure -> {
+                    _viewState.update {
+                        it.copy(
+                            isSynchronizing = false
+                        )
+                    }
+                }
+            }
+        }
+
     private suspend fun initialRemoteCategoryLoad() = coroutineScope {
         when (val result = fetchCategoriesForPathUseCase(categoryPath)) {
             is FetchCategoriesForPathResult.Success -> {
-                val categoriesWithImagesDeferred = async {
-                    categoriesWithImagesForFetchCategoriesForPathSuccess(result)
-                }
-
-                val categoriesWithoutImages =
-                    categoriesWithoutImagesForFetchCategoriesForPathSuccess(result)
+                val categoriesWithoutImages = result.categories.map { it.toUiCategory() }
 
                 _viewState.update {
-                    viewStateForLoadedCategories(
+                    it.forLoadedCategories(
                         categories = categoriesWithoutImages,
                         isSynchronizing = false,
                     )
                 }
 
-                val categoriesWithImages = categoriesWithImagesDeferred.await()
+                val categoriesWithImages = getCategoriesWithImagesLoadedRemotely(
+                    categories = categoriesWithoutImages
+                )
 
                 _viewState.update {
-                    viewStateForLoadedCategories(
+                    it.forLoadedCategories(
                         categories = categoriesWithImages,
                         isSynchronizing = false,
                     )
                 }
             }
             is FetchCategoriesForPathResult.Failure -> {
-                _viewState.update { viewStateForFetchCategoriesForPathFailure(result) }
-            }
-        }
-    }
-
-    private suspend fun localImageLoadOfCategories(categories: List<DomainCategory>) =
-        coroutineScope {
-            val categoriesWithImages = categories.map { category ->
-                val bitmap =
-                    fetchLocalImageByteArrayForPathUseCase(category.path)?.let { byteArray ->
-                        byteArrayToBitmap(byteArray)
-                    }
-                category.toUiCategory(bitmap = bitmap)
-            }
-
-            _viewState.update {
-                viewStateForLoadedCategories(
-                    categories = categoriesWithImages,
-                    isSynchronizing = true
-                )
-            }
-        }
-
-    private suspend fun synchronizeLocalCategoriesWithCloud() = coroutineScope {
-        val result = fetchCategoriesForPathUseCase(categoryPath)
-
-        if (result is FetchCategoriesForPathResult.Success) {
-            val categoriesWithImagesDeferred = async {
-                categoriesWithImagesForFetchCategoriesForPathSuccess(result)
-            }
-
-            val categoriesWithImages = categoriesWithImagesDeferred.await()
-
-            deleteRedundantLocalCategories(categoriesWithImages)
-
-            _viewState.update {
-                viewStateForLoadedCategories(
-                    categories = categoriesWithImages,
-                    isSynchronizing = false
-                )
-            }
-        } else Unit
-    }
-
-    private fun categoriesWithoutImagesForFetchCategoriesForPathSuccess(
-        result: FetchCategoriesForPathResult.Success
-    ): List<UiCategory> {
-        val categories = result.categories
-
-        return categories.map { it.toUiCategory() }
-    }
-
-    private suspend fun categoriesWithImagesForFetchCategoriesForPathSuccess(
-        result: FetchCategoriesForPathResult.Success
-    ): List<UiCategory> {
-        return coroutineScope {
-            val categories = result.categories
-
-            val fetchImageResults =
-                categories.map { async { fetchImageByteArrayForPathUseCase(it.path) } }.awaitAll()
-
-            val categoriesWithImages = categories.mapIndexed { index, category ->
-                val fetchImageResult = fetchImageResults[index]
-
-                if (fetchImageResult is FetchImageByteArrayForPathResult.Success) {
-                    saveImageByteArrayLocallyUseCase(category.path, fetchImageResult.bytes)
+                _viewState.update {
+                    it.copy(
+                        categoriesLoadingState = CategoriesLoadingState.LoadingError,
+                        isSynchronizing = false,
+                        errorMessage = errorMessageForFetchCategoriesForPathFailure(result)
+                    )
                 }
-                val bitmap = bitmapForFetchImageByteArrayForPathResult(fetchImageResult)
+            }
+        }
+    }
 
-                category.toUiCategory(
-                    bitmap = bitmap,
-                )
+    private suspend fun getCategoriesWithImagesLoadedRemotely(
+        categories: List<UiCategory>
+    ): List<UiCategory> = coroutineScope {
+        val fetchImageResults =
+            categories.map { async { fetchImageByteArrayForPathUseCase(it.path) } }.awaitAll()
+
+        val categoriesWithImages = categories.mapIndexed { index, category ->
+            val fetchImageResult = fetchImageResults[index]
+
+            if (fetchImageResult is FetchImageByteArrayForPathResult.Success) {
+                saveImageByteArrayLocallyUseCase(category.path, fetchImageResult.bytes)
             }
 
-            categoriesWithImages
+            val bitmap = byteArrayToBitmap(
+                byteArray = (fetchImageResult as? FetchImageByteArrayForPathResult.Success)?.bytes
+            )
+
+            category.copy(
+                bitmap = bitmap,
+            )
         }
-    }
 
-    private suspend fun bitmapForFetchImageByteArrayForPathResult(
-        result: FetchImageByteArrayForPathResult
-    ): Bitmap {
-        return (result as? FetchImageByteArrayForPathResult.Success)?.bytes.let { byteArray ->
-            byteArrayToBitmap(byteArray)
-        }
-    }
-
-    private suspend fun deleteRedundantLocalCategories(
-        cloudCategories: List<UiCategory>
-    ) {
-        val domainCategories = cloudCategories.map { it.toDomainCategory() }
-
-        deleteLocalCategoriesNotPresentInListUseCase(categoryPath, domainCategories)
+        categoriesWithImages
     }
 
     private suspend fun byteArrayToBitmap(byteArray: ByteArray?): Bitmap {
@@ -222,36 +210,6 @@ class CategoriesViewModel @Inject constructor(
         } else {
             bitmapEncodingService.xmlDrawableToBitmap(R.drawable.baseline_error_outline_24)
         }
-    }
-
-    private fun loadingViewState(): CategoriesViewState {
-        return _viewState.value.copy(
-            categoriesLoadingState = CategoriesLoadingState.Loading,
-            categories = null,
-            errorMessage = null,
-        )
-    }
-
-    private fun viewStateForLoadedCategories(
-        categories: List<UiCategory>,
-        isSynchronizing: Boolean,
-    ): CategoriesViewState {
-        return _viewState.value.copy(
-            categoriesLoadingState = CategoriesLoadingState.Loaded,
-            isSynchronizing = isSynchronizing,
-            categories = categories,
-            errorMessage = null,
-        )
-    }
-
-    private fun viewStateForFetchCategoriesForPathFailure(
-        result: FetchCategoriesForPathResult.Failure
-    ): CategoriesViewState {
-        return _viewState.value.copy(
-            categoriesLoadingState = CategoriesLoadingState.LoadingError,
-            isSynchronizing = false,
-            errorMessage = errorMessageForFetchCategoriesForPathFailure(result)
-        )
     }
 
     private fun errorMessageForFetchCategoriesForPathFailure(
@@ -269,3 +227,13 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 }
+
+private fun CategoriesViewState.forLoadedCategories(
+    categories: List<UiCategory>,
+    isSynchronizing: Boolean? = null,
+) = copy(
+    categoriesLoadingState = CategoriesLoadingState.Loaded,
+    isSynchronizing = isSynchronizing ?: this.isSynchronizing,
+    categories = categories,
+    errorMessage = null,
+)
