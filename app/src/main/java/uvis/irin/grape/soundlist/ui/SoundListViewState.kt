@@ -8,6 +8,7 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 data class SoundListViewState(
     val category: UiCategory,
     val soundsLoadingState: SoundsLoadingState = SoundsLoadingState.Loading,
+    val isSynchronizing: Boolean = false,
     val searchQuery: String = "",
     val showOnlyFavourites: Boolean = false,
     val sounds: List<UiSound>? = null,

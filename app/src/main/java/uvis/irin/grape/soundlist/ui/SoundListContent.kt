@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import uvis.irin.grape.core.constants.bigPadding
-import uvis.irin.grape.core.constants.smallPadding
 import uvis.irin.grape.core.ui.components.GrapeSnackbar
 import uvis.irin.grape.core.ui.helpers.getString
 import uvis.irin.grape.soundlist.ui.components.SoundListLoadingContent
@@ -74,11 +73,7 @@ fun SoundListContent(
     ) { paddingValues ->
         Crossfade(
             modifier = Modifier
-                .padding(paddingValues)
-                .padding(
-                    horizontal = smallPadding,
-                    vertical = smallPadding,
-                ),
+                .padding(paddingValues),
             targetState = viewState.soundsLoadingState
         ) { screenState ->
             when (screenState) {
@@ -101,6 +96,7 @@ fun SoundListContent(
 
                     viewState.filteredSounds?.let { sounds ->
                         SoundListLoadedContent(
+                            isSynchronizing = viewState.isSynchronizing,
                             sounds = sounds,
                             scrollBehavior = scrollBehavior,
                             onSoundButtonClicked = onSoundButtonClicked,

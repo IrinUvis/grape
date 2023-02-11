@@ -1,7 +1,5 @@
 package uvis.irin.grape.soundlist.ui.components
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -13,7 +11,6 @@ import uvis.irin.grape.core.constants.extraSmallPadding
 import uvis.irin.grape.soundlist.ui.model.UiSound
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun SoundRow(
     modifier: Modifier = Modifier,

@@ -26,4 +26,5 @@
     <string name="searchSoundsHint">Search sounds</string>
     <string name="closeSearchButtonContentDescription">Stop searching</string>
     <string name="clearTextButtonContentDescription">Clear text</string>
+    <string name="cannotSynchronizeSoundsErrorMessage">Cannot synchronize sounds with the cloud properly</string>
 </resources>
