@@ -303,15 +303,19 @@ class SoundListViewModel @Inject constructor(
             is FetchSoundsForPathResult.Success -> {
                 val resultSounds = fetchRemoteSoundsResult.sounds.map { it.toUiSound() }
 
-                val remoteSounds = getSoundsWithFilesLoadedLocallyAndWithIsFavourites(
-                    sounds = resultSounds,
-                    favouriteSoundsPaths = favouriteSoundsPaths,
-                )
-
-                _viewState.update {
-                    it.forLoadedSounds(
-                        sounds = remoteSounds,
+                if (resultSounds.isEmpty()) {
+                    _viewState.update { it.copy(soundsLoadingState = SoundsLoadingState.ShouldBeCategory) }
+                } else {
+                    val remoteSounds = getSoundsWithFilesLoadedLocallyAndWithIsFavourites(
+                        sounds = resultSounds,
+                        favouriteSoundsPaths = favouriteSoundsPaths,
                     )
+
+                    _viewState.update {
+                        it.forLoadedSounds(
+                            sounds = remoteSounds,
+                        )
+                    }
                 }
             }
             is FetchSoundsForPathResult.Failure -> {

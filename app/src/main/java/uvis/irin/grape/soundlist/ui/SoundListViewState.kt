@@ -26,4 +26,5 @@ enum class SoundsLoadingState {
     Loading,
     Loaded,
     LoadingError,
+    ShouldBeCategory
 }

@@ -3,11 +3,10 @@ package uvis.irin.grape.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.navigation.navOptions
+import uvis.irin.grape.core.extension.withForwardSlashesReplacedByDashes
 import uvis.irin.grape.soundlist.ui.SoundListScreen
 
 const val SOUND_LIST_ARG = "soundsCategory"
@@ -23,6 +22,11 @@ fun NavGraphBuilder.soundListScreen(
     ) {
         SoundListScreen(
             navigateUp = { navController.navigateUp() },
+            navigateToCategories = { path ->
+                navController.navigateToCategories(path.withForwardSlashesReplacedByDashes()) {
+                    popUpTo(SoundListDestination.route) { inclusive = true }
+                }
+            }
         )
     }
 }

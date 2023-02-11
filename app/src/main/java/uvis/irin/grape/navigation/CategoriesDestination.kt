@@ -52,3 +52,13 @@ fun NavController.navigateToCategories(
         navOptions = navOptions,
     )
 }
+
+fun NavController.navigateToCategories(
+    path: String,
+    builder: (NavOptionsBuilder.() -> Unit)
+) {
+    navigateToCategories(
+        path = path,
+        navOptions = navOptions(builder)
+    )
+}

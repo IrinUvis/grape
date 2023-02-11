@@ -29,6 +29,7 @@ import uvis.irin.grape.soundlist.ui.model.UiSound
 @Composable
 fun SoundListContent(
     viewState: SoundListViewState,
+    navigateToCategoryInstead: () -> Unit,
     onNavigationIconClicked: () -> Unit,
     onDownloadForOfflineIconClicked: () -> Unit,
     onClearSearchQueryClicked: () -> Unit,
@@ -113,6 +114,11 @@ fun SoundListContent(
                             onRetryButtonClicked = onRetryButtonClicked,
                             errorMessage = errorMessage.getString(),
                         )
+                    }
+                }
+                SoundsLoadingState.ShouldBeCategory -> {
+                    LaunchedEffect(true) {
+                        navigateToCategoryInstead()
                     }
                 }
             }
