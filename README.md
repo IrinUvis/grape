@@ -17,9 +17,4 @@ All of that is done in a quick, optimized and animated manner.
 ## Screenshots
 Various screenshots of the application can be seen on images below:
 
-![Categories 1](./documentation/categories_1.png) ![Categories 2](./documentation/categories_2.png) ![Sound list](./documentation/sounds.png)
-
-## Video
-The video demonstrating the application in full can be seen on a gif below:
-
-![Demonstrative video](./documentation/video.gif)
+![Categories 1](./documentation/categories_1.jpg) ![Categories 2](./documentation/categories_2.jpg) ![Sound list](./documentation/sounds.jpg)
