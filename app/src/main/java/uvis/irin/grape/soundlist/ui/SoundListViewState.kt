@@ -1,17 +1,30 @@
 package uvis.irin.grape.soundlist.ui
 
-import uvis.irin.grape.soundlist.domain.model.ResourceSound
-import uvis.irin.grape.soundlist.domain.model.ResourceSoundCategory
+import uvis.irin.grape.categories.ui.model.UiCategory
+import uvis.irin.grape.core.ui.helpers.UiText
+import uvis.irin.grape.soundlist.ui.model.DownloadState
+import uvis.irin.grape.soundlist.ui.model.UiSound
 
 data class SoundListViewState(
-    val showLoading: Boolean = true,
-    val categories: List<ResourceSoundCategory> = emptyList(),
-    val selectedCategory: ResourceSoundCategory? = null,
-    val subcategories: List<ResourceSoundCategory>? = null,
-    val selectedSubcategory: ResourceSoundCategory? = null,
-    val sounds: List<ResourceSound> = emptyList(),
-    val favouriteSounds: List<ResourceSound> = emptyList(),
-    val displayOnlyFavourites: Boolean = false,
+    val category: UiCategory,
+    val soundsLoadingState: SoundsLoadingState = SoundsLoadingState.Loading,
+    val isSynchronizing: Boolean = false,
     val searchQuery: String = "",
-    val errorMessage: String? = null,
-)
+    val showOnlyFavourites: Boolean = false,
+    val sounds: List<UiSound>? = null,
+    val soundsDownloadState: DownloadState = DownloadState.NotDownloaded,
+    val isSearchExpanded: Boolean = false,
+    val errorMessage: UiText? = null,
+) {
+    val filteredSounds: List<UiSound>?
+        get() = sounds
+            ?.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+            ?.filter { if (showOnlyFavourites) it.isFavourite else true }
+}
+
+enum class SoundsLoadingState {
+    Loading,
+    Loaded,
+    LoadingError,
+    ShouldBeCategory
+}

@@ -2,24 +2,24 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "873dbb6e4976213c76ee7160d3a22390",
+    "identityHash": "bcbc7dc19593c0bb12c9ee6f2327743d",
     "entities": [
       {
         "tableName": "favourite_sound",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`completePath` TEXT NOT NULL, PRIMARY KEY(`completePath`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`path` TEXT NOT NULL, PRIMARY KEY(`path`))",
         "fields": [
           {
-            "fieldPath": "completePath",
-            "columnName": "completePath",
+            "fieldPath": "path",
+            "columnName": "path",
             "affinity": "TEXT",
             "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
-            "completePath"
-          ],
-          "autoGenerate": false
+            "path"
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -28,7 +28,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '873dbb6e4976213c76ee7160d3a22390')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bcbc7dc19593c0bb12c9ee6f2327743d')"
     ]
   }
 }

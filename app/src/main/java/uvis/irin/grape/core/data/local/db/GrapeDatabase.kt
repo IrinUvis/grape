@@ -7,8 +7,8 @@ import uvis.irin.grape.core.data.local.favouritesounds.PersistableFavouriteSound
 
 @Database(
     entities = [PersistableFavouriteSound::class],
-    version = 1
+    version = 1,
 )
 abstract class GrapeDatabase : RoomDatabase() {
-    abstract fun favouriteSoundsDao(): FavouriteSoundDao
+    abstract fun favouriteSoundDao(): FavouriteSoundDao
 }

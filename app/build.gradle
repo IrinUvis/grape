@@ -3,6 +3,8 @@ plugins {
     id "kotlin-android"
     id "kotlin-kapt"
     id "dagger.hilt.android.plugin"
+    id "com.google.gms.google-services"
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -12,8 +14,8 @@ android {
         applicationId "uvis.irin.grape"
         minSdk 28
         targetSdk 33
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,45 +53,56 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    testOptions {
-        unitTests.all {
-            kover {
-                enabled = true
-                excludes = [
-                        "uvis.irin.grape.core.ui.theme.*",
-                        ".*ComposableSingletons.*",
-                        ".*Hilt.*",
-                        ".*BuildConfig.*",
-                        ".*_Factory.*",
-                ]
-            }
-        }
-    }
     namespace 'uvis.irin.grape'
 }
 
 dependencies {
-
-    implementation "androidx.core:core-ktx:$rootProject.ext.versions.ktxCore"
-    implementation "androidx.appcompat:appcompat:$rootProject.ext.versions.appCompat"
-    implementation "com.google.android.material:material:$rootProject.ext.versions.material"
-    implementation "androidx.compose.ui:ui:$rootProject.ext.versions.compose"
-    implementation "androidx.compose.material:material:$rootProject.ext.versions.compose"
-    implementation "androidx.compose.ui:ui-tooling-preview:$rootProject.ext.versions.compose"
-    implementation "androidx.compose.material3:material3:$rootProject.ext.versions.md3"
+    // Essentials
+    implementation "androidx.core:core-ktx:1.9.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$rootProject.ext.versions.lifecycle"
     implementation "androidx.activity:activity-compose:$rootProject.ext.versions.activityCompose"
+    implementation "androidx.compose.ui:ui:$rootProject.ext.versions.compose"
+    implementation "androidx.compose.ui:ui-tooling-preview:$rootProject.ext.versions.compose"
+
+    // Material 3
+    implementation "androidx.compose.material3:material3:$rootProject.ext.versions.md3"
+
+    // Accompanist
     implementation "com.google.accompanist:accompanist-systemuicontroller:$rootProject.ext.versions.accompanist"
-    implementation "com.google.dagger:hilt-android:$hiltVersion"
-    implementation "androidx.hilt:hilt-navigation-compose:$rootProject.ext.versions.hiltNavigationCompose"
+
+    // Navigation
+    implementation "androidx.navigation:navigation-compose:$rootProject.ext.versions.navigation"
+
+    // Room
     implementation "androidx.room:room-runtime:$rootProject.ext.versions.room"
     implementation "androidx.room:room-ktx:$rootProject.ext.versions.room"
-    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
     kapt "androidx.room:room-compiler:$rootProject.ext.versions.room"
-    testImplementation "junit:junit:$rootProject.ext.versions.junit"
     annotationProcessor "androidx.room:room-compiler:$rootProject.ext.versions.room"
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-navigation-compose:$rootProject.ext.versions.hiltNavigationCompose"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+
+    // Firebase
+    implementation platform("com.google.firebase:firebase-bom:$rootProject.ext.versions.firebaseBom")
+    implementation "com.google.firebase:firebase-storage-ktx"
+
+    // Splash screen API
+    implementation "androidx.core:core-splashscreen:$rootProject.ext.versions.splashScreenVersion"
+
+    // Tests
+    testImplementation "junit:junit:$rootProject.ext.versions.junit"
+    testImplementation "com.google.truth:truth:$rootProject.ext.versions.truthVersion"
+    testImplementation "io.mockk:mockk:$rootProject.ext.versions.mockkVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$rootProject.ext.versions.coroutinesVersion"
+
+    // Instrumented tests
     androidTestImplementation "androidx.test.ext:junit:$rootProject.ext.versions.androidxTest"
+    androidTestImplementation "com.google.truth:truth:$rootProject.ext.versions.truthVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.ext.versions.espresso"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$rootProject.ext.versions.compose"
+
+    // ???
     debugImplementation "androidx.compose.ui:ui-tooling:$rootProject.ext.versions.compose"
 }

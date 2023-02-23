@@ -6,20 +6,29 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun SoundListScreen(
-    viewModel: SoundListViewModel = hiltViewModel()
+    viewModel: SoundListViewModel = hiltViewModel(),
+    navigateUp: () -> Unit,
+    navigateToCategories: (String) -> Unit,
 ) {
     val viewState = viewModel.viewState.collectAsState()
 
     SoundListContent(
         viewState = viewState.value,
-        onSoundPressed = viewModel::onSoundPressed,
-        onSoundShareButtonPressed = viewModel::onSoundShareButtonPressed,
-        onCategorySelected = viewModel::onCategorySelected,
-        onSubcategorySelected = viewModel::onSubcategorySelected,
-        onFavouriteButtonPressed = viewModel::onFavouriteButtonPressed,
-        onSoundSearchBarTextChanged = viewModel::onSoundSearchBarTextChanged,
-        onBackButtonPressed = viewModel::onBackButtonPressed,
-        onDisplayOnlyFavouritesButtonPressed = viewModel::onDisplayOnlyFavouritesButtonPressed,
-        onErrorSnackbarDismissed = viewModel::onErrorSnackbarDismissed
+        navigateToCategoryInstead = {
+            val path = viewState.value.category.path
+            navigateToCategories(path)
+        },
+        onNavigationIconClicked = navigateUp,
+        onDownloadForOfflineIconClicked = viewModel::downloadOrRemoveAllSounds,
+        onClearSearchQueryClicked = viewModel::clearSearchQuery,
+        onSearchIconClicked = viewModel::toggleSearchInput,
+        onSearchQueryChanged = viewModel::changeSearchQuery,
+        onShowOnlyFavouritesClicked = viewModel::toggleShowOnlyFavourites,
+        onDownloadSoundClicked = viewModel::downloadOrRemoveSound,
+        onSoundButtonClicked = viewModel::playSound,
+        onFavouriteButtonClicked = viewModel::toggleFavouriteSound,
+        onShareButtonClicked = viewModel::shareSound,
+        onRetryButtonClicked = viewModel::retryLoadingSounds,
+        onErrorSnackbarDismissed = viewModel::clearErrorMessage
     )
 }

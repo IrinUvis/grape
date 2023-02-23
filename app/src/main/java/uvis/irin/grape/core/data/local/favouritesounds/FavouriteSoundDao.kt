@@ -7,8 +7,8 @@ import androidx.room.Query
 
 @Dao
 interface FavouriteSoundDao {
-    @Query("SELECT * FROM favourite_sound")
-    suspend fun getAll(): List<PersistableFavouriteSound>
+    @Query("SELECT * FROM favourite_sound WHERE path LIKE :path || '%'") // concat used for LIKE exp
+    suspend fun getAllByPath(path: String): List<PersistableFavouriteSound>
 
     @Insert
     suspend fun insertFavouriteSound(favouriteSound: PersistableFavouriteSound)

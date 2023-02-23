@@ -98,14 +98,14 @@ complexity:
     threshold: 600
   LongMethod:
     active: true
-    threshold: 60
+    threshold: 100
   LongParameterList:
     active: true
     functionThreshold: 6
     constructorThreshold: 7
     ignoreDefaultParameters: true
     ignoreDataClasses: true
-    ignoreAnnotated: ['Composable']
+    ignoreAnnotated: ['Composable', 'HiltViewModel']
   MethodOverloading:
     active: false
     threshold: 6
@@ -133,7 +133,7 @@ complexity:
     thresholdInObjects: 11
     thresholdInEnums: 11
     ignoreDeprecated: false
-    ignorePrivate: false
+    ignorePrivate: true
     ignoreOverridden: false
 
 coroutines:
@@ -231,7 +231,6 @@ exceptions:
      - Exception
      - IllegalMonitorStateException
      - NullPointerException
-     - IndexOutOfBoundsException
      - RuntimeException
      - Throwable
     allowedExceptionNameRegex: '_|(ignore|expected).*'

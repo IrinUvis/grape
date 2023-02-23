@@ -1,3 +1,30 @@
 <resources>
     <string name="app_name">Grape</string>
+    <string name="navigationIconContentDescription">Navigate to previous screen button</string>
+    <string name="favouriteSoundToggleButtonContentDescription">Toggle favourite sound button</string>
+    <string name="shareSoundButtonContentDescription">Share sound button</string>
+    <string name="networkErrorMessage">A network error has occurred. Check your Internet connection</string>
+    <string name="exceededFreeTierErrorMessage">Can\'t load any more sounds this month</string>
+    <string name="tooLargeFileErrorMessage">The sound is too large to be downloaded</string>
+    <string name="unexpectedErrorMessage">An unexpected error has occurred</string>
+    <string name="unknownErrorMessage">An unknown error has occurred</string>
+    <string name="dismissSnackbarButton">Dismiss snackbar</string>
+    <string name="loading">Loading</string>
+    <string name="downloadCategorySoundsButtonContentDescription">Download all sounds from this category button</string>
+    <string name="playSoundButtonContentDescription">Play sound button</string>
+    <string name="retry">Retry</string>
+    <string name="retryButtonContentDescription">Retry button</string>
+    <string name="networkAndNoDownloadedSoundsErrorMessage">A network error has occurred and you don\'t have any sounds downloaded for this category. Check your Internet connection</string>
+    <string name="exceededFreeTierAndNoDownloadedSoundsErrorMessage">Can\'t load any more sounds this month and you don\'t have any sounds downloaded for this category</string>
+    <string name="unexpectedAndNoDownloadedSoundsErrorMessage">An unexpected error has occurred and you don\'t have any sounds downloaded for this category</string>
+    <string name="unknownAndNoDownloadedSoundsErrorMessage">An unknown error has occurred and you don\'t have any sounds downloaded for this category</string>
+    <string name="networkAndNoDownloadedCategoriesErrorMessage">A network error has occurred and you don\'t have any categories downloaded. Check your Internet connection</string>
+    <string name="exceededFreeTierAndNoDownloadedCategoriesErrorMessage">Can\'t load any more sounds this month and you don\'t have any categories downloaded</string>
+    <string name="unexpectedAndNoDownloadedCategoriesErrorMessage">An unexpected error has occurred and you don\'t have any categories downloaded</string>
+    <string name="unknownAndNoDownloadedCategoriesErrorMessage">An unknown error has occurred and you don\'t have any categories downloaded</string>
+    <string name="searchButtonContentDescription">Search sounds</string>
+    <string name="searchSoundsHint">Search sounds</string>
+    <string name="closeSearchButtonContentDescription">Stop searching</string>
+    <string name="clearTextButtonContentDescription">Clear text</string>
+    <string name="cannotSynchronizeSoundsErrorMessage">Cannot synchronize sounds with the cloud properly</string>
 </resources>
